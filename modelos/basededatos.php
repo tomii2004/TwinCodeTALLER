@@ -1,6 +1,6 @@
 <?php
 
-class BasedeDatos {
+class BasedeDatos{
   const server = "localhost";
   const user = "root";
   const password = "";

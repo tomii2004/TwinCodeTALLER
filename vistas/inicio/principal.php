@@ -11,7 +11,7 @@
   <section class="content">
     <div class="container-fluid">
       <!-- Aquí va tu contenido dinámico -->
-      <p>holaaa`</p>
+      <p>holaaa</p>
     </div>
   </section>
 </div>
