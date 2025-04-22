@@ -1,5 +1,4 @@
 <?php
-session_start();
 
 include 'modelos/productos.php';
 require_once "modelos/categorias.php";
