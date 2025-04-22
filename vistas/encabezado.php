@@ -99,6 +99,14 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="?c=presupuestos" class="nav-link">
+              <i class="nav-icon fas fa-solid fa-comments-dollar"></i>
+              <p>
+                Presupuestos
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="?c=productos" class="nav-link">
               <i class="nav-icon fas fa-solid fa-wrench"></i>
               <p>
