@@ -17,28 +17,22 @@ class UsuariosControlador {
    
 
     public function login() {
-            $Usuario = $_POST['Nombre'];
-            $password = $_POST['Password'];
+        $Usuario = $_POST['Nombre'];
+        $password = $_POST['Password'];
 
-            $user = $this->modeloAdmin->ConsultarUsuario($Usuario);
-            echo $user;
+        $user = $this->modeloAdmin->ConsultarUsuario($Usuario);
+        
+        if ($user && password_verify($password, $user['Password'])) {
+            $_SESSION['Autenticado'] = true;
 
-            if ($user && password_verify($password, $user['Password'])) {
-                $_SESSION['Autenticado'] = true;
-
-                echo "<pre>";
-                print_r($_SESSION);
-                echo "</pre>";
-               
-
-                $_SESSION['Nombre'] = $user['Nombre'];
-              
-                header('Location: ?c=inicio'); 
-                exit();
-            } else {
-                $error = 'Nombre de usuario o contraseña incorrectos';
-                include 'vistas/usuarios/login.php';
-            }
+            $_SESSION['Nombre'] = $user['Nombre'];
+            
+            header('Location: ?c=inicio'); 
+            exit();
+        } else {
+            $error = 'Nombre de usuario o contraseña incorrectos';
+            include 'vistas/usuarios/login.php';
+        }
     }
     
 
