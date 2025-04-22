@@ -11,7 +11,7 @@ class CategoriasControlador{
     }
 
     public function Inicio(){
-        $this->modelo->VerificarAdmin();
+        
 
         $categorias = $this->modelo->Listar();
         require_once "vistas/encabezado.php";
@@ -21,7 +21,7 @@ class CategoriasControlador{
     
 
     public function FormNuevo(){
-        $categoria = $this->modelo->VerificarAdmin();
+       
         
         require_once "vistas/encabezado.php";
         require_once "vistas/categorias/nuevo.php";
@@ -29,7 +29,7 @@ class CategoriasControlador{
     }
 
     public function FormEditar(){
-        $categoria = $this->modelo->VerificarAdmin();
+        
         $categoria = $this->modelo->ModificarCategoria();
         require_once "vistas/encabezado.php";
         require_once "vistas/categorias/editar.php";
@@ -57,7 +57,7 @@ class CategoriasControlador{
             $id = $_POST['id'];
             $resultados = $this->modelo->EliminarCategoriaModelo($id); // Llama al modelo para eliminar la categoría
             
-            if (!$resultado) {
+            if (!$resultados) {
                 header("Location: ?c=categorias&alerta=uso"); // Mostrar mensaje de error
                 exit;
             }

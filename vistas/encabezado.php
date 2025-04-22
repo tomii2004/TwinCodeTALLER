@@ -69,7 +69,9 @@
           <i class="fas fa-th-large"></i>
         </a>
       </li>
+      
     </ul>
+    
   </nav>
   <!-- /.navbar -->
 
@@ -110,6 +112,11 @@
               <p>
                 Categorias
               </p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-danger" href="?c=usuarios&a=cerrarSesion" role="button">
+              <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
             </a>
           </li>
         </ul>

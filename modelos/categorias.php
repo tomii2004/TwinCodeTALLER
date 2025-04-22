@@ -6,16 +6,7 @@ class Categorias{
         $this-> pdo = BasedeDatos::connection();
     }
 
-    public function VerificarAdmin(){
-        if(!isset($_SESSION['user_type'])){
-            header('Location: paginalogin/loginadmin/loginadmin.php');
-            exit;
-        }
-        if($_SESSION['user_type'] != 'admin'){
-            header('Location: front/index.php');
-            exit;
-        }
-    }
+  
 
     public function Listar(){
         try {

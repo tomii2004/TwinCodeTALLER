@@ -12,7 +12,7 @@ class ProductosControlador{
     }
 
     public function Inicio(){
-        $this->modelo->VerificarAdmin();
+        
 
         $productos = $this->modelo->Listar();
         require_once "vistas/encabezado.php";
@@ -22,7 +22,7 @@ class ProductosControlador{
     
 
     public function FormNuevo(){
-        $producto = $this->modelo->VerificarAdmin();
+      
         
         $categoriasModelo = new Categorias();
         $categorias = $categoriasModelo -> Listar();
@@ -32,7 +32,7 @@ class ProductosControlador{
     }
 
     public function FormEditar(){
-        $producto = $this->modelo->VerificarAdmin();
+      
         $producto = $this->modelo->ModificarProducto();
         require_once "vistas/encabezado.php";
         require_once "vistas/productos/editar.php";
@@ -60,7 +60,7 @@ class ProductosControlador{
             $id = $_POST['id'];
             $resultados = $this->modelo->EliminarProductoModelo($id); // Llama al modelo para eliminar la categoría
             
-            if (!$resultado) {
+            if (!$resultados) {
                 header("Location: ?c=productos&alerta=uso"); // Mostrar mensaje de error
                 exit;
             }
