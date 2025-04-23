@@ -31,6 +31,8 @@ class ClientesControlador
         require_once "vistas/pie.php";
     }
 
+
+
     public function FormNuevo()
     {
         require_once "vistas/encabezado.php";
@@ -80,5 +82,14 @@ class ClientesControlador
         $resultado = $this->modelo->AgregarVehiculo($idcliente, $nombre, $chasis, $motor);
         header("Location: ?c=clientes&alerta=" . ($resultado ? "success" : "error"));
         exit();
+    }
+
+    public function ObtenerTrabajosJSON()
+    {
+        $id_cliente = $_GET['cliente'];
+        $vehiculo   = $_GET['vehiculo'] ?? 'todos';
+        header('Content-Type: application/json');
+        echo json_encode($this->modelo->ObtenerTrabajos($id_cliente, $vehiculo));
+        exit;
     }
 }

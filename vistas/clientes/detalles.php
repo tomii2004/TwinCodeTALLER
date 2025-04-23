@@ -147,15 +147,64 @@
     </section>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const filtro = document.getElementById('vehiculoFiltro');
+        const clienteID = <?= json_encode($_GET['id']) ?>;
+        const filtro = document.getElementById('vehiculoFiltro');
+        const tbody = document.querySelector('#tablaTrabajos tbody');
 
-            filtro.addEventListener('change', function() {
-                const valorSeleccionado = this.value;
-                const url = new URL(window.location.href);
-                url.searchParams.set('vehiculo', valorSeleccionado);
-                window.location.href = url.toString();
-            });
-        });
+        async function cargar(veh) {
+            const res = await fetch(`?c=clientes&a=ObtenerTrabajosJSON&cliente=${clienteID}&vehiculo=${veh}`);
+            const trabajos = await res.json();
+            tbody.innerHTML = trabajos.length ?
+                trabajos.map(t => `
+      <tr>
+        <td>${t.Fecha}</td>
+        <td>$${parseFloat(t.Total).toLocaleString('es-AR',{minimumFractionDigits:2})}</td>
+        <td>${t.vehiculo}</td>
+        <td>
+          <button class="btn btn-info btn-sm" onclick="showDetails(${t.ID_trabajo}, ${JSON.stringify(t.Productos).replace(/"/g,'&quot;')})">
+            Ver detalles
+          </button>
+        </td>
+      </tr>`).join('') :
+                '<tr><td colspan="4">No hay trabajos.</td></tr>';
+        }
+
+        // al cargar por primera vez y al cambiar
+        filtro.addEventListener('change', () => cargar(filtro.value));
+        cargar(filtro.value);
+
+        // crea y muestra el modal con los productos
+        function showDetails(id, productos) {
+            let html = `<div class="modal fade" id="m${id}" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">Productos</h5>
+      <button type="button" class="close" data-dismiss="modal">&times;</button>
+    </div>
+    <div class="modal-body">` +
+                (productos.length ?
+                    `<table class="table"><thead><tr><th>Producto</th><th>Cant.</th><th>PU</th><th>Sub</th></tr></thead><tbody>` +
+                    productos.map(p => {
+                        const sub = p.Cantidad * p.PrecioUnitario;
+                        return `<tr>
+            <td>${p.NombreProducto}</td>
+            <td>${p.Cantidad}</td>
+            <td>$${p.PrecioUnitario.toFixed(2)}</td>
+            <td>$${sub.toFixed(2)}</td>
+          </tr>`;
+                    }).join('') +
+                    `</tbody><tfoot>
+          <tr><th colspan="3" class="text-right">Total</th><th>$${productos.reduce((sum,p)=>sum+p.Cantidad*p.PrecioUnitario,0).toFixed(2)}</th></tr>
+        </tfoot></table>` :
+                    '<p>No hay productos.</p>'
+                ) +
+                `</div>
+    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>
+  </div></div></div>`;
+
+            document.getElementById(`m${id}`)?.remove();
+            document.body.insertAdjacentHTML('beforeend', html);
+            $(`#m${id}`).modal('show');
+        }
     </script>
+
 </div>

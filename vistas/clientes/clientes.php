@@ -69,7 +69,7 @@
                                                 <form action="?c=clientes&a=AgregarVehiculo" method="POST">
                                                     <div class="modal-body">
                                                         <div class="form-group">
-                                                            <label for="vehiculoNombre">Nombre del Vehículo:</label>
+                                                            <label for="vehiculoNombre">Modelo del Vehículo:</label>
                                                             <input type="text" class="form-control" id="vehiculoNombre" name="vehiculoNombre" required>
                                                         </div>
                                                         <div class="form-group">

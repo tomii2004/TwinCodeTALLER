@@ -33,12 +33,28 @@
                                     <label for="nombre">Nombre:</label>
                                     <input type="text" class="form-control" id="nombre" name="nombre" autocomplete="off" required>
                                 </div>
-                                
+
                                 <div class="form-group">
                                     <label for="telefono">Teléfono:</label>
                                     <input type="text" class="form-control" id="telefono" name="telefono" autocomplete="off">
                                 </div>
+                                <hr>
+                                <h5>Datos del Vehículo</h5>
+                                <div class="form-group">
+                                    <label>Modelo</label>
+                                    <input type="text" name="vehiculoNombre" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Número de Motor</label>
+                                    <input type="text" name="numeroMotor" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label>Número de Chasis</label>
+                                    <input type="text" name="numeroChasis" class="form-control">
+                                </div>
                             </div>
+
+
 
                             <div class="card-footer d-flex justify-content-between">
                                 <button type="button" onclick="history.back();" class="btn btn-secondary">
