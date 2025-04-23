@@ -107,6 +107,14 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="?c=clientes" class="nav-link">
+              <i class="nav-icon fas fa-solid fa-users"></i>
+              <p>
+                Clientes
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="?c=categorias" class="nav-link">
               <i class="nav-icon fas fa-solid fa-list"></i>
               <p>
