@@ -10,7 +10,7 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1>Presupuesto</h1>
-                    <small>Crear presupuesto rápido</small>
+                    <small>Crear presupuesto</small>
                 </div>
             </div>
         </div>

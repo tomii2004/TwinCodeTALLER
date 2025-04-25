@@ -1,0 +1,47 @@
+/* Estilo principal para el calendario */
+#calendar {
+    height: 100vh; /* 100% de la altura de la ventana */
+    width: 100%;   /* 100% del ancho de la ventana */
+    margin: 0;     /* Eliminar márgenes */
+    padding: 0;    /* Eliminar padding */
+    box-sizing: border-box; /* Incluir el padding y borde dentro del tamaño total */
+    font-family: 'Arial', sans-serif;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+/* Estilo de los eventos */
+.fc-title {
+    font-size: 17px;
+    font-weight: bold;
+    color: #df3232; /* Rojo predominante */
+    display: flex;
+    align-items: center;
+}
+
+/* Estilo del ícono antes del nombre del evento */
+.fc-title::before {
+    content: '\f0ad'; /* Ícono de herramienta en Font Awesome */
+    font-family: 'Font Awesome 5 Free'; /* Asegúrate de que este sea el nombre correcto */
+    font-weight: 900; /* Esto es necesario para los íconos de Font Awesome 5 */
+    margin-right: 8px;
+    font-size: 16px;
+    color: #df3232; /* Rojo suave para el ícono */
+}
+
+/* Estilo para los botones del calendario */
+.fc-button {
+    background-color: #df3232; /* Botones con color rojo suave */
+    color: white;
+    border-radius: 5px;
+    border: none;
+    padding: 8px 15px;
+    font-size: 17px;
+    transition: background-color 0.3s ease;
+}
+
+.fc-button:hover {
+    background-color: #ff0979; /* Rojo más intenso en hover */
+}
+

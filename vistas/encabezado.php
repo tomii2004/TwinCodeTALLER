@@ -13,7 +13,11 @@
   <link rel="stylesheet" href="plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="dist/css/adminlte.min.css">
-  
+  <link rel="stylesheet" href="plugins/fullcalendar/main.css">
+  <script src="plugins/fullcalendar/main.js"></script>
+  <script src="plugins/fullcalendar/locales/es.js"></script>
+  <link rel="stylesheet" href="vistas/estilospropios.css">
+
   <style>
     .swal2-popup.alerta-grande {
       width: 450px !important;
@@ -32,8 +36,6 @@
       font-size: 16px;
       color: grey;
     }
-    
-    
     
   </style>
 </head>
@@ -91,10 +93,10 @@
                with font-awesome or any other icon font library -->
           
           <li class="nav-item">
-            <a href="pages/calendar.html" class="nav-link">
+            <a href="?c=turnos" class="nav-link">
               <i class="nav-icon fas fa-calendar-alt"></i>
               <p>
-                Calendario
+                Turnos
               </p>
             </a>
           </li>
