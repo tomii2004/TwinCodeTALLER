@@ -155,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 inputValidator: (value) => {
                     if (!value) return 'Debe ingresar un valor';
                     if (isNaN(value) || parseFloat(value) < 0) return 'El valor debe ser un número positivo';
+                    if(value == 0) return 'El valor deber ser mayor a 0';
                 }
             });
 
