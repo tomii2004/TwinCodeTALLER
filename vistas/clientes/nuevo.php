@@ -30,13 +30,26 @@
                         <form action="?c=clientes&a=AgregarCliente" method="post">
                             <div class="card-body">
                                 <div class="form-group">
-                                    <label for="nombre">Nombre:</label>
-                                    <input type="text" class="form-control" id="nombre" name="nombre" autocomplete="off" required>
+                                    <label>Nombre:</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" name="nombre">
+                                    </div>
+
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="telefono">Teléfono:</label>
-                                    <input type="text" class="form-control" id="telefono" name="telefono" autocomplete="off">
+                                    <label>Teléfono:</label>
+
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                        </div>
+                                        <input type="text" class="form-control" name="telefono">
+                                    </div>
+
                                 </div>
                                 <hr>
                                 <h5>Datos del Vehículo</h5>
