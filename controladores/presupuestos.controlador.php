@@ -24,7 +24,7 @@ class PresupuestosControlador {
         $fecha = date('d/m/Y');
         $fechaArchivo = date('Ymd');
     
-        $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logo.png'));
+        $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logojb1.png'));
     
         $html = '
         <style>
