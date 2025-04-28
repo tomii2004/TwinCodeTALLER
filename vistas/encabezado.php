@@ -107,6 +107,14 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="?c=trabajos" class="nav-link">
+              <i class="nav-icon fas fa-solid fa-tools"></i>
+              <p>
+                Trabajos
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="?c=productos" class="nav-link">
               <i class="nav-icon fas fa-solid fa-wrench"></i>
               <p>

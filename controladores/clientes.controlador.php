@@ -18,6 +18,14 @@ class ClientesControlador
         require_once "vistas/pie.php";
     }
 
+    // Obtener todos los clientes
+    public function obtenerClientes()
+    {
+        $clientes = $this->modelo->ObtenerClientes();
+        echo json_encode($clientes);
+    }
+
+
     public function Detalles()
     {
         $idCliente = $_GET['id']; // o como lo estés recibiendo
@@ -52,6 +60,13 @@ class ClientesControlador
     {
         $resultado = $this->modelo->AgregarCliente($_POST);
         header("Location: ?c=clientes&alerta=" . ($resultado ? "success" : "error"));
+        exit();
+    }
+
+    public function AgregarClienteEnTrabajo()
+    {
+        $resultado = $this->modelo->AgregarCliente($_POST);
+        header("Location: ?c=trabajos&a=nuevoTrabajo&alerta=" . ($resultado ? "success" : "error"));
         exit();
     }
 
