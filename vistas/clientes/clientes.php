@@ -126,7 +126,7 @@
             Swal.fire({
                 icon: 'success',
                 title: 'Registro Exitoso',
-                text: 'Vehículo añadido correctamente.',
+                text: 'cliente añadido correctamente.',
                 confirmButtonText: 'OK'
             });
         } else if (alerta === "error") {

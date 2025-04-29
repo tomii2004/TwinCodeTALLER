@@ -28,26 +28,38 @@
                             <h3 class="card-title">Trabajos realizados</h3>
                         </div>
                         <div class="card-body">
+
                             <div class="form-group">
-                                <label for="nombreCliente">Nombre:</label>
-                                <input type="text" class="form-control" id="nombreCliente" value="<?php echo htmlspecialchars($cliente['Nombre']); ?>" readonly>
+                                <label>Nombre:</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" value="<?= htmlspecialchars($cliente['Nombre']) ?>" readonly>
+                                </div>
                             </div>
 
                             <div class="form-group">
-                                <label for="telefonoCliente">Teléfono:</label>
-                                <input type="text" class="form-control" id="telefonoCliente" value="<?php echo htmlspecialchars($cliente['Telefono']); ?>" readonly>
+                                <label>Teléfono:</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" value="<?= htmlspecialchars($cliente['Telefono']) ?>" readonly>
+                                </div>
                             </div>
 
-                            <h6 class="mt-4">Filtrar por Vehículo:</h6>
-                            <select id="vehiculoFiltro" class="form-control mb-3">
-                                <option value="todos" <?php echo $vehiculoSeleccionado === 'todos' ? 'selected' : ''; ?>>Todos los vehículos</option>
-                                <?php foreach ($vehiculos as $vehiculo): ?>
-                                    <option value="<?php echo htmlspecialchars($vehiculo['Nombre']); ?>"
-                                        <?php echo $vehiculoSeleccionado === $vehiculo['Nombre'] ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($vehiculo['Nombre']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
+                            <div class="form-group mt-4">
+                                <h6>Filtrar por Vehículo:</h6>
+                                <select id="vehiculoFiltro" class="form-control mb-3">
+                                    <option value="todos" <?= $vehiculoSeleccionado === 'todos' ? 'selected' : '' ?>>Todos los vehículos</option>
+                                    <?php foreach ($vehiculos as $vehiculo): ?>
+                                        <option value="<?= htmlspecialchars($vehiculo['Nombre']) ?>" <?= $vehiculoSeleccionado === $vehiculo['Nombre'] ? 'selected' : '' ?>>
+                                            <?= htmlspecialchars($vehiculo['Nombre']) ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
 
                             <div class="table-responsive">
                                 <table class="table table-hover text-nowrap" id="tablaTrabajos">
@@ -61,12 +73,12 @@
                                     </thead>
                                     <tbody>
                                         <?php foreach ($trabajos as $trabajo): ?>
-                                            <tr data-vehiculo="<?php echo htmlspecialchars($trabajo['vehiculo']); ?>">
-                                                <td><?php echo $trabajo['Fecha']; ?></td>
-                                                <td>$<?php echo number_format($trabajo['Total'], 2, ',', '.'); ?></td>
-                                                <td><?php echo $trabajo['vehiculo']; ?></td>
+                                            <tr>
+                                                <td><?= $trabajo['Fecha'] ?></td>
+                                                <td>$<?= number_format($trabajo['Total'], 2, ',', '.') ?></td>
+                                                <td><?= htmlspecialchars($trabajo['vehiculo']) ?></td>
                                                 <td>
-                                                    <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#DetalleProductos<?= $trabajo['ID_trabajo'] ?>">
+                                                    <button class="btn btn-info btn-sm" onclick='showDetails(<?= $trabajo['ID_trabajo'] ?>, <?= json_encode($trabajo['Productos']) ?>)'>
                                                         Ver detalles
                                                     </button>
                                                 </td>
@@ -79,26 +91,131 @@
                             <?php if (count($trabajos) == 0): ?>
                                 <p>No hay trabajos registrados para este cliente.</p>
                             <?php endif; ?>
+
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- Modal debe estar fuera de la tabla, en el mismo nivel -->
-        <?php foreach ($trabajos as $trabajo): ?>
-            <div class="modal fade" id="DetalleProductos<?= $trabajo['ID_trabajo'] ?>" tabindex="-1" role="dialog" aria-labelledby="DetalleProductosLabel<?= $trabajo['ID_trabajo'] ?>" aria-hidden="true">
+    <!-- Contenedor de modales dinámicos -->
+    <div id="modales"></div>
+
+    <script>
+    const clienteID = <?= json_encode($_GET['id']) ?>;
+    const filtro = document.getElementById('vehiculoFiltro');
+    const tbody = document.querySelector('#tablaTrabajos tbody');
+    const modalesContainer = document.getElementById('modales');
+
+    let todosLosTrabajos = [];
+    let trabajosPorPagina = 5; // Cantidad de filas por página
+    let paginaActual = 1;
+
+    async function cargar(vehiculo) {
+        try {
+            const res = await fetch(`?c=clientes&a=ObtenerTrabajosJSON&cliente=${clienteID}&vehiculo=${vehiculo}`);
+            const trabajos = await res.json();
+
+            todosLosTrabajos = trabajos;
+            paginaActual = 1; // Resetea a la primera página
+            renderizarTabla();
+        } catch (error) {
+            console.error('Error cargando trabajos:', error);
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error cargando datos.</td></tr>';
+        }
+    }
+
+    function renderizarTabla() {
+        tbody.innerHTML = '';
+        modalesContainer.innerHTML = '';
+
+        if (todosLosTrabajos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay trabajos registrados.</td></tr>';
+            document.getElementById('paginador')?.remove();
+            return;
+        }
+
+        const inicio = (paginaActual - 1) * trabajosPorPagina;
+        const fin = inicio + trabajosPorPagina;
+        const trabajosPagina = todosLosTrabajos.slice(inicio, fin);
+
+        trabajosPagina.forEach(t => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${t.Fecha}</td>
+                    <td>$${parseFloat(t.Total).toLocaleString('es-AR', {minimumFractionDigits:2})}</td>
+                    <td>${t.vehiculo}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick='showDetails(${t.ID_trabajo}, ${JSON.stringify(t.Productos)})'>
+                            Ver detalles
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        renderizarPaginador();
+    }
+
+    function renderizarPaginador() {
+        document.getElementById('paginador')?.remove(); // Elimina el paginador anterior si existe
+
+        const totalPaginas = Math.ceil(todosLosTrabajos.length / trabajosPorPagina);
+        if (totalPaginas <= 1) return; // No crear paginador si no hace falta
+
+        let paginadorHTML = `
+            <nav id="paginador" class="mt-3">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item ${paginaActual === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual - 1})">Anterior</a>
+                    </li>
+        `;
+
+        for (let i = 1; i <= totalPaginas; i++) {
+            paginadorHTML += `
+                <li class="page-item ${paginaActual === i ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="cambiarPagina(${i})">${i}</a>
+                </li>
+            `;
+        }
+
+        paginadorHTML += `
+                    <li class="page-item ${paginaActual === totalPaginas ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual + 1})">Siguiente</a>
+                    </li>
+                </ul>
+            </nav>
+        `;
+
+        tbody.parentElement.insertAdjacentHTML('afterend', paginadorHTML);
+    }
+
+    function cambiarPagina(nuevaPagina) {
+        const totalPaginas = Math.ceil(todosLosTrabajos.length / trabajosPorPagina);
+        if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
+        paginaActual = nuevaPagina;
+        renderizarTabla();
+    }
+
+    filtro.addEventListener('change', () => cargar(filtro.value));
+    cargar(filtro.value);
+
+    function showDetails(id, productos) {
+        document.getElementById(`m${id}`)?.remove();
+
+        let modalHTML = `
+            <div class="modal fade" id="m${id}" tabindex="-1" role="dialog" aria-labelledby="modalLabel${id}" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="DetalleProductosLabel<?= $trabajo['ID_trabajo'] ?>">Detalle de Productos</h5>
+                            <h5 class="modal-title" id="modalLabel${id}">Detalle de Productos</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
-
                         <div class="modal-body">
-                            <?php if (!empty($trabajo['Productos'])): ?>
+                            ${productos.length > 0 ? `
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
@@ -109,102 +226,35 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php
-                                        $total = 0;
-                                        foreach ($trabajo['Productos'] as $producto):
-                                            $subtotal = $producto['Cantidad'] * $producto['PrecioUnitario'];
-                                            $total += $subtotal;
-                                        ?>
+                                        ${productos.map(p => `
                                             <tr>
-                                                <td><?= htmlspecialchars($producto['NombreProducto']) ?></td>
-                                                <td><?= $producto['Cantidad'] ?></td>
-                                                <td>$<?= number_format($producto['PrecioUnitario'], 2, ',', '.') ?></td>
-                                                <td>$<?= number_format($subtotal, 2, ',', '.') ?></td>
+                                                <td>${p.NombreProducto}</td>
+                                                <td>${p.Cantidad}</td>
+                                                <td>$${parseFloat(p.PrecioUnitario).toFixed(2)}</td>
+                                                <td>$${(p.Cantidad * p.PrecioUnitario).toFixed(2)}</td>
                                             </tr>
-                                        <?php endforeach; ?>
+                                        `).join('')}
                                     </tbody>
                                     <tfoot>
                                         <tr>
                                             <th colspan="3" class="text-right">Total</th>
-                                            <th>$<?= number_format($total, 2, ',', '.') ?></th>
+                                            <th>$${productos.reduce((sum, p) => sum + (p.Cantidad * p.PrecioUnitario), 0).toFixed(2)}</th>
                                         </tr>
                                     </tfoot>
                                 </table>
-                            <?php else: ?>
-                                <p>No hay productos registrados para este trabajo.</p>
-                            <?php endif; ?>
+                            ` : '<p>No hay productos para mostrar.</p>'}
                         </div>
-
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                         </div>
-
                     </div>
                 </div>
             </div>
-        <?php endforeach; ?>
+        `;
 
-    </section>
-
-    <script>
-        const clienteID = <?= json_encode($_GET['id']) ?>;
-        const filtro = document.getElementById('vehiculoFiltro');
-        const tbody = document.querySelector('#tablaTrabajos tbody');
-
-        async function cargar(veh) {
-            const res = await fetch(`?c=clientes&a=ObtenerTrabajosJSON&cliente=${clienteID}&vehiculo=${veh}`);
-            const trabajos = await res.json();
-            tbody.innerHTML = trabajos.length ?
-                trabajos.map(t => `
-      <tr>
-        <td>${t.Fecha}</td>
-        <td>$${parseFloat(t.Total).toLocaleString('es-AR',{minimumFractionDigits:2})}</td>
-        <td>${t.vehiculo}</td>
-        <td>
-          <button class="btn btn-info btn-sm" onclick="showDetails(${t.ID_trabajo}, ${JSON.stringify(t.Productos).replace(/"/g,'&quot;')})">
-            Ver detalles
-          </button>
-        </td>
-      </tr>`).join('') :
-                '<tr><td colspan="4">No hay trabajos.</td></tr>';
-        }
-
-        // al cargar por primera vez y al cambiar
-        filtro.addEventListener('change', () => cargar(filtro.value));
-        cargar(filtro.value);
-
-        // crea y muestra el modal con los productos
-        function showDetails(id, productos) {
-            let html = `<div class="modal fade" id="m${id}" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
-    <div class="modal-header">
-      <h5 class="modal-title">Productos</h5>
-      <button type="button" class="close" data-dismiss="modal">&times;</button>
-    </div>
-    <div class="modal-body">` +
-                (productos.length ?
-                    `<table class="table"><thead><tr><th>Producto</th><th>Cant.</th><th>PU</th><th>Sub</th></tr></thead><tbody>` +
-                    productos.map(p => {
-                        const sub = p.Cantidad * p.PrecioUnitario;
-                        return `<tr>
-            <td>${p.NombreProducto}</td>
-            <td>${p.Cantidad}</td>
-            <td>$${p.PrecioUnitario.toFixed(2)}</td>
-            <td>$${sub.toFixed(2)}</td>
-          </tr>`;
-                    }).join('') +
-                    `</tbody><tfoot>
-          <tr><th colspan="3" class="text-right">Total</th><th>$${productos.reduce((sum,p)=>sum+p.Cantidad*p.PrecioUnitario,0).toFixed(2)}</th></tr>
-        </tfoot></table>` :
-                    '<p>No hay productos.</p>'
-                ) +
-                `</div>
-    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>
-  </div></div></div>`;
-
-            document.getElementById(`m${id}`)?.remove();
-            document.body.insertAdjacentHTML('beforeend', html);
-            $(`#m${id}`).modal('show');
-        }
-    </script>
+        modalesContainer.insertAdjacentHTML('beforeend', modalHTML);
+        $(`#m${id}`).modal('show');
+    }
+</script>
 
 </div>
