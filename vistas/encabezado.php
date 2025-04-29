@@ -133,6 +133,14 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="?c=caja" class="nav-link">
+              <i class="nav-icon fas fa-solid fa-money-bill-wave"></i>
+              <p>
+                Caja
+              </p>
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link text-danger" href="?c=usuarios&a=cerrarSesion" role="button">
               <i class="nav-icon fas fa-solid fa-sign-out-alt"></i><p>Cerrar Sesión</p> 
             </a>
