@@ -27,7 +27,7 @@ class UsuariosControlador {
 
             $_SESSION['Nombre'] = $user['Nombre'];
             
-            header('Location: ?c=inicio'); 
+            header('Location: ?c=turnos'); 
             exit();
         } else {
             $error = 'Nombre de usuario o contraseña incorrectos';

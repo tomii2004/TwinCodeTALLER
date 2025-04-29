@@ -27,15 +27,17 @@ class Trabajos
     // Función para guardar el trabajo
     public function guardarTrabajo($cliente, $vehiculoId, $totalTrabajo, $nota)
     {
+        $fechaHoy = date('Y-m-d');
         // Preparar la consulta SQL para insertar el trabajo
         $query = "INSERT INTO trabajos (ID_cliente, ID_vehiculo, Total, Nota, Fecha) 
-              VALUES (:cliente, :vehiculo_id, :totalTrabajo,:Nota, CURDATE())";
+              VALUES (:cliente, :vehiculo_id, :totalTrabajo,:Nota, :fecha)";
         // Preparar la sentencia
         $stmt = $this->pdo->prepare($query);
         $stmt->bindParam(':cliente', $cliente);
         $stmt->bindParam(':vehiculo_id', $vehiculoId); // Guardamos solo el ID del vehículo
         $stmt->bindParam(':totalTrabajo', $totalTrabajo);
         $stmt->bindParam(':Nota', $nota);
+        $stmt->bindParam(':fecha', $fechaHoy);
 
         // Ejecutar la consulta
         $stmt->execute();
