@@ -58,26 +58,7 @@
                             </tr>
                         </thead>
                         <tbody id="trabajosTableBody">
-                            <?php if (!empty($trabajos)) : ?>
-                                <?php foreach ($trabajos as $trabajo): ?>
-                                    <tr>
-                                        <td><?= $trabajo['ID_trabajo']; ?></td>
-                                        <td><?= ucfirst($trabajo['Cliente']); ?></td>
-                                        <td><?= $trabajo['Vehiculo']; ?></td>
-                                        <td><?= date('d/m/Y', strtotime($trabajo['Fecha'])); ?></td>
-                                        <td><?= $trabajo['Total']; ?></td>
-                                        <td>
-                                            <a class="btn btn-info btn-sm" href="?c=trabajos&a=Detalles&id=<?= $trabajo['ID_trabajo'] ?>">
-                                                <i class="fas fa-eye"></i> Detalles
-                                            </a>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="6">No hay trabajos cargados.</td>
-                                </tr>
-                            <?php endif; ?>
+                            
                         </tbody>
                     </table>
                 </div>
@@ -152,7 +133,7 @@
                     <td>${trabajo['ID_trabajo']}</td>
                     <td>${trabajo['Cliente']}</td>
                     <td>${trabajo['Vehiculo']}</td>
-                    <td>${new Date(trabajo['Fecha']).toLocaleDateString()}</td>
+                    <td>${trabajo['Fecha']}</td>
                     <td>${trabajo['Total']}</td>
                     <td>
                         <a class="btn btn-info btn-sm" href="?c=trabajos&a=Detalles&id=${trabajo['ID_trabajo']}">

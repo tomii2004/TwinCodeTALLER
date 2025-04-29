@@ -1,70 +1,86 @@
 <?php
-
-
 class Caja
 {
     private $pdo;
 
     public function __CONSTRUCT()
     {
-        $this->pdo = BasedeDatos::connection(); // Tu clase de conexión personalizada
+        $this->pdo = BasedeDatos::connection();
     }
 
-    public function obtenerServiciosPorFecha($fecha) {
-        $sql = "SELECT SUM(tp.preciounitario * tp.cantidad) AS total_servicios
-                FROM trabajos_productos tp
-                JOIN trabajos t ON tp.ID_trabajo = t.ID_trabajo
-                JOIN productos p ON tp.ID_producto = p.ID_productos
-                JOIN categorias c ON p.ID_categoria = c.ID_categoria
-                WHERE DATE(t.fecha) = ? AND LOWER(c.nombre) = 'servicio'";
-        
+    /**
+     * Calcula totales de ingresos (Servicios) y egresos (otros productos)
+     * para la fecha dada.
+     */
+    public function calcularCajaPorFecha($fecha)
+    {
+        $sql = "
+            SELECT 
+                c.nombre AS categoria,
+                p.nombre AS producto,
+                tp.cantidad,
+                tp.preciounitario,
+                (tp.cantidad * tp.preciounitario) AS total
+            FROM trabajos_productos tp
+            INNER JOIN productos p   ON p.ID_productos   = tp.ID_producto
+            INNER JOIN categorias c  ON c.ID_categoria   = p.ID_categoria
+            INNER JOIN trabajos t    ON t.ID_trabajo      = tp.ID_trabajo
+            WHERE DATE(t.Fecha) = ?
+        ";
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$fecha]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $ingresos = 0;
+        $egresos  = 0;
+
+        foreach ($productos as $p) {
+            if (strtolower(trim($p['categoria'])) === 'servicio') {
+                $ingresos += $p['total'];
+            } else {
+                $egresos += $p['total'];
+            }
+        }
+
+        return [
+            'fecha'    => $fecha,
+            'ingresos' => $ingresos,
+            'egresos'  => $egresos,
+            'ganancia' => $ingresos - $egresos
+        ];
     }
 
-    public function obtenerCostoProductosPorFecha($fecha) {
-        $sql = "SELECT SUM(tp.preciounitario * tp.cantidad) AS total_productos
-                FROM trabajos_productos tp
-                JOIN trabajos t ON tp.ID_trabajo = t.ID_trabajo
-                JOIN productos p ON tp.ID_producto = p.ID_productos
-                JOIN categorias c ON p.ID_categoria = c.ID_categoria
-                WHERE DATE(t.fecha) = ? AND LOWER(c.nombre) != 'servicio'";
-        
+    /**
+     * Devuelve el detalle de cada trabajo para la fecha dada,
+     * agrupando los ítems por trabajo y luego por producto,
+     * y usando el Total ya calculado en la tabla trabajos.
+     */
+    public function obtenerDetallePorFecha($fecha)
+    {
+        $sql = "
+            SELECT
+                t.ID_trabajo,
+                t.Nota,
+                t.Total AS total_trabajo,
+                c.nombre                          AS categoria,
+                p.nombre                          AS producto,
+                SUM(tp.cantidad)                  AS cantidad,
+                tp.preciounitario,
+                SUM(tp.cantidad * tp.preciounitario) AS total
+            FROM trabajos_productos tp
+            INNER JOIN trabajos t    ON t.ID_trabajo     = tp.ID_trabajo
+            INNER JOIN productos p   ON p.ID_productos    = tp.ID_producto
+            INNER JOIN categorias c  ON c.ID_categoria    = p.ID_categoria
+            WHERE DATE(t.Fecha) = ?
+            GROUP BY 
+                t.ID_trabajo, t.Nota, t.Total,
+                c.nombre, p.nombre, tp.preciounitario
+            ORDER BY t.ID_trabajo, c.nombre, p.nombre
+        ";
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$fecha]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function guardarCierreCaja($datos) {
-        $sql = "INSERT INTO cierres_caja 
-                (fecha, ingresos_servicios, costo_productos, total_pagos, utilidad_bruta, observaciones, creado_por) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
-        return $this->pdo->execute($sql, [
-            $datos['fecha'],
-            $datos['servicios'],
-            $datos['productos'],
-            $datos['pagos'],
-            $datos['utilidad'],
-            $datos['observaciones'],
-            $datos['usuario_id']
-        ]);
-    }
-    
-    public function cierreExiste($fecha) {
-        $sql = "SELECT COUNT(*) as total FROM cierres_caja WHERE fecha = ?";
-        $res = $this->pdo->fetchOne($sql, [$fecha]);
-        return $res['total'] > 0;
-    }
-
-    public function registrarMovimientoManual($tipo, $concepto, $monto, $fecha, $usuario_id) {
-        $sql = "INSERT INTO movimientos_caja (fecha, tipo, concepto, monto, creado_por)
-                VALUES (?, ?, ?, ?, ?)";
-        return $this->pdo->execute($sql, [$fecha, $tipo, $concepto, $monto, $usuario_id]);
-    }
-    
-    public function obtenerMovimientosPorFecha($fecha) {
-        $sql = "SELECT * FROM movimientos_caja WHERE fecha = ? ORDER BY creado_en";
-        return $this->pdo->fetchAll($sql, [$fecha]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

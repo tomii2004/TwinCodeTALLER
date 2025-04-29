@@ -1,9 +1,10 @@
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
-    <!-- Content Header -->
+
+    <!-- Header -->
     <section class="content-header">
         <div class="container-fluid">
-            <h1>Resumen de Caja - <?= htmlspecialchars($datos['fecha']) ?></h1>
+            <h1>Caja del día: <?= htmlspecialchars($datosCaja['fecha']) ?></h1>
         </div>
     </section>
 
@@ -11,145 +12,96 @@
     <section class="content">
         <div class="container-fluid">
 
-            <!-- Primera fila: Resumen y Selección de Fecha -->
+            <!-- Fecha selector -->
+            <div class="row mb-3">
+                <div class="col-md-4 offset-md-8">
+                    <form method="get" action="">
+                        <input type="hidden" name="c" value="caja">
+                        <input type="hidden" name="a" value="Inicio">
+                        <div class="input-group">
+                            <input type="date" name="fecha" class="form-control"
+                                   value="<?= htmlspecialchars($datosCaja['fecha']) ?>">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> Consultar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resumen de Caja -->
             <div class="row">
-                <!-- Resumen Financiero -->
-                <div class="col-md-6">
+                <div class="col-md-6 offset-md-3">
                     <div class="card card-primary">
                         <div class="card-header">
-                            <h3 class="card-title">Resumen</h3>
+                            <h3 class="card-title">Resumen de Caja</h3>
                         </div>
                         <div class="card-body">
                             <table class="table table-bordered">
                                 <tr>
-                                    <th>Ingresos por Servicios</th>
-                                    <td>$<?= number_format($datos['servicios'], 2) ?></td>
+                                    <th>Ingresos (Servicios)</th>
+                                    <td>$<?= number_format($datosCaja['ingresos'], 2) ?></td>
                                 </tr>
                                 <tr>
-                                    <th>Costo de Productos</th>
-                                    <td>$<?= number_format($datos['productos'], 2) ?></td>
+                                    <th>Egresos (Repuestos)</th>
+                                    <td>$<?= number_format($datosCaja['egresos'], 2) ?></td>
                                 </tr>
                                 <tr>
-                                    <th>Utilidad Bruta</th>
-                                    <td>$<?= number_format($datos['servicios'] - $datos['productos'], 2) ?></td>
+                                    <th>Ganancia</th>
+                                    <td><strong>$<?= number_format($datosCaja['ganancia'], 2) ?></strong></td>
                                 </tr>
                             </table>
                         </div>
                     </div>
                 </div>
-
-                <!-- Selección de Fecha -->
-                <div class="col-md-6">
-                    <div class="card card-info">
-                        <div class="card-header">
-                            <h3 class="card-title">Seleccionar Fecha</h3>
-                        </div>
-                        <div class="card-body">
-                            <form method="get" action="?c=caja">
-                                <div class="form-group">
-                                    <label for="fecha">Fecha:</label>
-                                    <input type="date" name="fecha" class="form-control"
-                                           value="<?= htmlspecialchars($datos['fecha']) ?>">
-                                </div>
-                                <button type="submit" class="btn btn-info">Consultar</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
             </div>
 
-            <!-- Segunda fila: Movimiento Manual y Cierre de Caja -->
-            <div class="row">
-                <!-- Movimiento Manual -->
-                <div class="col-md-6">
-                    <div class="card card-warning">
-                        <div class="card-header">
-                            <h3 class="card-title">Registrar Movimiento Manual</h3>
-                        </div>
-                        <div class="card-body">
-                            <form method="post" action="?c=caja">
-                                <input type="hidden" name="fecha" value="<?= htmlspecialchars($datos['fecha']) ?>">
-                                <div class="form-group">
-                                    <label>Tipo:</label>
-                                    <select name="tipo" class="form-control">
-                                        <option value="ingreso">Ingreso</option>
-                                        <option value="retiro">Retiro</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Concepto:</label>
-                                    <input type="text" name="concepto" class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <label>Monto:</label>
-                                    <input type="number" step="0.01" name="monto" class="form-control">
-                                </div>
-                                <button type="submit" class="btn btn-warning">Registrar Movimiento</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Cierre de Caja -->
-                <div class="col-md-6">
-                    <div class="card card-danger">
-                        <div class="card-header">
-                            <h3 class="card-title">Cierre de Caja</h3>
-                        </div>
-                        <div class="card-body">
-                            <form method="post" action="?c=caja">
-                                <input type="hidden" name="fecha" value="<?= htmlspecialchars($datos['fecha']) ?>">
-                                <div class="form-group">
-                                    <label>Observaciones:</label>
-                                    <textarea name="observaciones" class="form-control"></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-danger">Cerrar Caja del Día</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tercera fila: Lista de movimientos -->
-            <div class="row">
+            <!-- Detalle por Trabajo -->
+            <div class="row mt-4">
                 <div class="col-12">
-                    <div class="card card-secondary">
+                    <?php
+                    $currentTrabajo = null;
+                    foreach ($detalle as $d):
+                        // Cuando cambia de trabajo, abrimos una nueva tarjeta
+                        if ($currentTrabajo !== $d['ID_trabajo']):
+                            if ($currentTrabajo !== null) echo "</tbody></table></div></div>";
+                            $currentTrabajo = $d['ID_trabajo'];
+                    ?>
+                    <div class="card card-secondary mb-4">
                         <div class="card-header">
-                            <h3 class="card-title">Movimientos Manuales del <?= htmlspecialchars($datos['fecha']) ?></h3>
+                            <h5 class="card-title">
+                                Trabajo #<?= $d['ID_trabajo'] ?>
+                                — Nota: <?= htmlspecialchars($d['Nota'] ?: '—') ?>
+                                — Total Trabajo: $<?= number_format($d['total_trabajo'], 2) ?>
+                            </h5>
                         </div>
-                        <div class="card-body">
-                            <?php if (!empty($movimientos)): ?>
-                                <table class="table table-bordered table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Fecha y hora</th>
-                                            <th>Tipo</th>
-                                            <th>Concepto</th>
-                                            <th>Monto</th>
-                                            <th>Registrado por</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($movimientos as $m): ?>
-                                            <tr>
-                                                <td><?= htmlspecialchars($m['creado_en']) ?></td>
-                                                <td>
-                                                    <span class="badge badge-<?= $m['tipo'] == 'ingreso' ? 'success' : 'danger' ?>">
-                                                        <?= ucfirst($m['tipo']) ?>
-                                                    </span>
-                                                </td>
-                                                <td><?= htmlspecialchars($m['concepto']) ?></td>
-                                                <td>$<?= number_format($m['monto'], 2) ?></td>
-                                                <td><?= htmlspecialchars($m['creado_por']) ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            <?php else: ?>
-                                <p>No se han registrado movimientos manuales para esta fecha.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th>Categoría</th>
+                                        <th>Producto / Servicio</th>
+                                        <th class="text-center">Cant.</th>
+                                        <th class="text-right">Unitario</th>
+                                        <th class="text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        <?php endif; ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($d['categoria']) ?></td>
+                                        <td><?= htmlspecialchars($d['producto']) ?></td>
+                                        <td class="text-center"><?= $d['cantidad'] ?></td>
+                                        <td class="text-right">$<?= number_format($d['preciounitario'], 2) ?></td>
+                                        <td class="text-right">$<?= number_format($d['total'], 2) ?></td>
+                                    </tr>
+                    <?php endforeach;
+                    if ($currentTrabajo !== null) echo "</tbody></table></div></div>";
+                    if (empty($detalle)): ?>
+                        <p class="text-center">No se encontraron registros para esta fecha.</p>
+                    <?php endif; ?>
                 </div>
             </div>
 

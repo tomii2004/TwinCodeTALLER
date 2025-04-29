@@ -76,7 +76,7 @@ class Clientes
     {
         if ($vehiculo === 'todos') {
             $sql = $this->pdo->prepare("
-            SELECT t.ID_trabajo, t.Fecha, t.Total, v.Nombre AS vehiculo
+            SELECT t.ID_trabajo, DATE_FORMAT(t.Fecha, '%d/%m/%Y') AS Fecha, t.Total, v.Nombre AS vehiculo
             FROM trabajos t
             INNER JOIN vehiculo v ON t.ID_vehiculo = v.ID_vehiculo
             WHERE v.ID_cliente = ?
@@ -85,7 +85,7 @@ class Clientes
             $sql->execute([$id_cliente]);
         } else {
             $sql = $this->pdo->prepare("
-            SELECT t.ID_trabajo, t.Fecha, t.Total, v.Nombre AS vehiculo
+            SELECT t.ID_trabajo, DATE_FORMAT(t.Fecha, '%d/%m/%Y') AS Fecha, t.Total, v.Nombre AS vehiculo
             FROM trabajos t
             INNER JOIN vehiculo v ON t.ID_vehiculo = v.ID_vehiculo
             WHERE v.ID_cliente = ? AND v.Nombre = ?

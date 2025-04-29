@@ -33,12 +33,12 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
 
     <div class="col-md-6">
         <label for="chasis">Número de Chasis</label>
-        <input type="text" id="chasis" class="form-control form-control-sm" disabled>
+        <input type="text" id="chasis" class="form-control form-control-sm" readonly disabled>
     </div>
 
     <div class="col-md-6">
         <label for="motor">Número de Motor</label>
-        <input type="text" id="motor" class="form-control form-control-sm" disabled>
+        <input type="text" id="motor" class="form-control form-control-sm" readonly disabled>
     </div>
 <!-- Coloca estos dos botones en una fila distinta para que se alineen mejor -->
 <div class="col-md-12 d-flex mt-3">
@@ -235,7 +235,7 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
             Swal.fire({
                 icon: 'success',
                 title: 'Registro Exitoso',
-                text: 'cliente y vehiculo añadido correctamente.',
+                text: 'Cliente y vehiculo añadido correctamente.',
                 confirmButtonText: 'OK'
             });
         } else if (alerta === "error") {
