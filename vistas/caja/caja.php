@@ -73,6 +73,7 @@
                         <div class="card-header">
                             <h5 class="card-title">
                                 Trabajo #<?= $d['ID_trabajo'] ?>
+                                — Cliente: <?= htmlspecialchars($d['nombre_cliente'] ?: '—') ?>
                                 — Nota: <?= htmlspecialchars($d['Nota'] ?: '—') ?>
                                 — Total Trabajo: $<?= number_format($d['total_trabajo'], 2) ?>
                             </h5>
@@ -91,8 +92,8 @@
                                 <tbody>
                         <?php endif; ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($d['categoria']) ?></td>
-                                        <td><?= htmlspecialchars($d['producto']) ?></td>
+                                        <td><?= ucfirst(htmlspecialchars($d['categoria'])) ?></td>
+                                        <td><?= ucfirst(htmlspecialchars($d['producto'])) ?></td>
                                         <td class="text-center"><?= $d['cantidad'] ?></td>
                                         <td class="text-right">$<?= number_format($d['preciounitario'], 2) ?></td>
                                         <td class="text-right">$<?= number_format($d['total'], 2) ?></td>

@@ -71,6 +71,16 @@ class ProductosControlador{
         }
     }
 
+    public function CambiarEstado(){
+        if (isset($_GET['id']) && isset($_GET['estado'])) {
+            $id = $_GET['id'];
+            $estado = $_GET['estado'];
+            $this->modelo->CambiarEstado($id, $estado);
+            header('Location: ?c=productos');
+            exit();
+        }
+    }
+    
 }
 
 

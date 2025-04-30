@@ -9,7 +9,7 @@ class Productos{
    
     public function Listar(){
         try {
-            $query = $this->pdo->prepare("SELECT p.ID_productos,p.nombre,p.ID_categoria,c.nombre as 'nombrecat' FROM productos p INNER JOIN categorias c ON p.ID_categoria = c.ID_categoria");
+            $query = $this->pdo->prepare("SELECT p.ID_productos,p.nombre,p.ID_categoria,p.estado,c.nombre as 'nombrecat' FROM productos p INNER JOIN categorias c ON p.ID_categoria = c.ID_categoria");
             $query->execute();
             return $query->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -56,6 +56,15 @@ class Productos{
         $sql = $this->pdo->prepare("DELETE FROM productos WHERE ID_productos = ?");
         $sql->execute([$id]);
         return true;
+    }
+
+    public function CambiarEstado($id, $estado){
+        try {
+            $sql = $this->pdo->prepare("UPDATE productos SET estado = ? WHERE ID_productos = ?");
+            $sql->execute([$estado, $id]);
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
     }
 
 }

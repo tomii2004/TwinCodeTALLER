@@ -67,7 +67,23 @@ class CategoriasControlador{
             echo "Error: No se recibió un ID válido.";
         }
     }
-
+    public function CambiarEstado(){
+        if (isset($_GET['id']) && isset($_GET['estado'])) {
+            $id = $_GET['id'];
+            $estado = $_GET['estado'];
+    
+            if ($estado == 0) { // Solo validar cuando se intenta desactivar
+                if ($this->modelo->CategoriaEnUso($id)) {
+                    header("Location: ?c=categorias&alerta=uso");
+                    exit();
+                }
+            }
+    
+            $this->modelo->CambiarEstado($id, $estado);
+            header('Location: ?c=categorias');
+            exit();
+        }
+    }
 }
 
 
