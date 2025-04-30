@@ -56,7 +56,7 @@
 
                                 <div class="form-group">
                                     <label>Modelo</label>
-                                    <input type="text" name="vehiculoNombre" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                                    <input type="text" name="vehiculoNombre" class="form-control" required>
                                     <div class="invalid-feedback">Por favor ingrese el modelo.</div>
                                 </div>
 

@@ -58,7 +58,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Cliente</th>
-                                <th>ID Trabajo</th>
+                                <th>Vehiculo</th>
                                 <th>Fecha</th>
                                 <th>Total</th>
                                 <th>Acciones</th>
@@ -98,7 +98,7 @@
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="modalLabel${id}">Detalle de Productos</h5>
+                            <h5 class="modal-title" id="modalLabel${id}">Detalles del Trabajo</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -166,8 +166,8 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${trabajo['ID_trabajo']}</td>
-                <td>${trabajo['Cliente']}</td>
-                <td>${trabajo['Vehiculo']}</td>
+                <td>${capitalizar(trabajo['Cliente'])}</td>
+                <td>${capitalizar(trabajo['Vehiculo'])}</td>
                 <td>${trabajo['Fecha']}</td>
                 <td>${trabajo['Total']}</td>
                 <td>
@@ -267,12 +267,19 @@
     // Buscador en vivo para trabajos
     document.getElementById('buscadorTrabajos').addEventListener('input', function() {
         const filtro = this.value.toLowerCase();
-        const filas = document.querySelectorAll('#tablaTrabajos tbody tr');
 
-        filas.forEach(fila => {
-            const texto = fila.textContent.toLowerCase();
-            fila.style.display = texto.includes(filtro) ? '' : 'none';
-        });
+        // Aplicamos el filtro sobre todos los trabajos originales
+        trabajosFiltrados = trabajosOriginales.filter(trabajo =>
+            trabajo.ID_trabajo.toString().toLowerCase().includes(filtro) ||
+            trabajo.Cliente.toLowerCase().includes(filtro) ||
+            trabajo.Vehiculo.toLowerCase().includes(filtro) ||
+            trabajo.Fecha.toLowerCase().includes(filtro) ||
+            trabajo.Total.toString().toLowerCase().includes(filtro)
+        );
+
+        currentPage = 1; // Volver a la primera página después de buscar
+        mostrarTrabajosPagina(currentPage); // Mostrar los resultados filtrados
+        generarPaginacion(); // Actualizar la paginación según los resultados
     });
 
     // Función para limpiar los filtros y volver a mostrar todos los trabajos

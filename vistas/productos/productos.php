@@ -100,41 +100,101 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
                         </tbody>
                     </table>
                 </div>
+                <div id="paginacionCategorias" class="d-flex justify-content-center mt-2 mb-2"></div>
             </div>
         </div>
     </section>
+    
     <script>
-    // Buscador en vivo
-    document.getElementById('buscador').addEventListener('input', function() {
-        const filtro = this.value.toLowerCase();
-        const filas = document.querySelectorAll('#tablacategorias tbody tr');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elementos del DOM
+        const buscador    = document.getElementById('buscador');
+        const clearBtn    = document.getElementById('clear-buscador');
+        const filtroCat   = document.getElementById('filtroCategoria');
+        const tablaBody   = document.querySelector('#tablacategorias tbody');
+        const paginacion  = document.getElementById('paginacionCategorias');
 
-        filas.forEach(fila => {
-            const texto = fila.textContent.toLowerCase();
-            fila.style.display = texto.includes(filtro) ? '' : 'none';
+        // Estado para paginación
+        const filasOriginales    = Array.from(tablaBody.querySelectorAll('tr'));
+        let filasFiltradas       = [...filasOriginales];
+        const filasPorPagina     = 10;
+        let paginaActual         = 1;
+
+        // Funciones de paginación
+        function mostrarPagina(pagina) {
+            const inicio = (pagina - 1) * filasPorPagina;
+            const fin    = inicio + filasPorPagina;
+            tablaBody.innerHTML = '';
+            filasFiltradas.slice(inicio, fin).forEach(tr => tablaBody.appendChild(tr));
+        }
+
+        function generarPaginacion() {
+            const totalPaginas = Math.ceil(filasFiltradas.length / filasPorPagina);
+            paginacion.innerHTML = '';
+
+            // Botón Anterior
+            const prev = document.createElement('button');
+            prev.textContent = 'Anterior';
+            prev.className   = 'btn btn-secondary btn-sm mr-1';
+            prev.disabled    = paginaActual === 1;
+            prev.addEventListener('click', () => cambiarPagina(paginaActual - 1));
+            paginacion.appendChild(prev);
+
+            // Botones de página
+            for (let i = 1; i <= totalPaginas; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.className  = `btn btn-secondary btn-sm mx-1 ${i === paginaActual ? 'active' : ''}`;
+                btn.addEventListener('click', () => cambiarPagina(i));
+                paginacion.appendChild(btn);
+            }
+
+            // Botón Siguiente
+            const next = document.createElement('button');
+            next.textContent = 'Siguiente';
+            next.className  = 'btn btn-secondary btn-sm ml-1';
+            next.disabled   = paginaActual === totalPaginas || totalPaginas === 0;
+            next.addEventListener('click', () => cambiarPagina(paginaActual + 1));
+            paginacion.appendChild(next);
+        }
+
+        function cambiarPagina(nuevaPagina) {
+            const totalPaginas = Math.ceil(filasFiltradas.length / filasPorPagina);
+            if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
+            paginaActual = nuevaPagina;
+            mostrarPagina(paginaActual);
+            generarPaginacion();
+        }
+
+        // Filtrado combinado (buscador + categoría)
+        function aplicarFiltros() {
+            const texto = buscador.value.trim().toLowerCase();
+            const cat   = filtroCat.value.toLowerCase();
+            filasFiltradas = filasOriginales.filter(tr => {
+                const cols = tr.children;
+                const nombre  = cols[1].textContent.toLowerCase();
+                const categoria = cols[2].textContent.toLowerCase();
+                const coincideTexto = nombre.includes(texto) || cols[0].textContent.toLowerCase().includes(texto);
+                const coincideCat   = (cat === 'todas') || categoria.includes(cat);
+                return coincideTexto && coincideCat;
+            });
+            paginaActual = 1;
+            mostrarPagina(paginaActual);
+            generarPaginacion();
+        }
+
+        // Eventos
+        buscador.addEventListener('input', aplicarFiltros);
+        clearBtn.addEventListener('click', () => {
+            buscador.value = '';
+            aplicarFiltros();
         });
-    });
+        filtroCat.addEventListener('change', aplicarFiltros);
 
-    // Limpiar buscador
-    document.getElementById('clear-buscador').addEventListener('click', function() {
-        const buscador = document.getElementById('buscador');
-        buscador.value = '';
-        buscador.dispatchEvent(new Event('input'));
-    });
-
-    // Filtrado
-    document.getElementById('filtroCategoria').addEventListener('change', function() {
-        const categoriaSeleccionada = this.value.toLowerCase();
-        const filas = document.querySelectorAll('#tablacategorias tbody tr');
-
-        filas.forEach(fila => {
-            const categoria = fila.children[2].textContent.toLowerCase(); // columna 3
-            fila.style.display = (categoriaSeleccionada === 'todas' || categoria.includes(
-                categoriaSeleccionada)) ? '' : 'none';
-        });
+        // Inicialización
+        aplicarFiltros();
     });
     </script>
-
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);

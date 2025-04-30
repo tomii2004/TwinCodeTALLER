@@ -16,7 +16,7 @@ class Caja
     {
         $sql = "
             SELECT 
-                c.nombre AS categoria,
+                LOWER(c.nombre) AS categoria,
                 p.nombre AS producto,
                 tp.cantidad,
                 tp.preciounitario,
@@ -36,7 +36,8 @@ class Caja
         $egresos  = 0;
 
         foreach ($productos as $p) {
-            if (strtolower(trim($p['categoria'])) === 'servicio') {
+            $categoria = strtolower(trim($p['categoria']));
+            if ($categoria === 'servicio' || $categoria === 'servicios') {
                 $ingresos += $p['total'];
             } else {
                 $egresos += $p['total'];

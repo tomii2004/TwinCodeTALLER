@@ -35,7 +35,8 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text"><i class="fas fa-user"></i></span>
                                     </div>
-                                    <input type="text" class="form-control" value="<?= htmlspecialchars($cliente['Nombre']) ?>" readonly>
+                                    <input type="text" class="form-control"
+                                        value="<?= ucfirst(htmlspecialchars($cliente['Nombre'])) ?>" readonly>
                                 </div>
                             </div>
 
@@ -45,18 +46,21 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text"><i class="fas fa-phone"></i></span>
                                     </div>
-                                    <input type="text" class="form-control" value="<?= htmlspecialchars($cliente['Telefono']) ?>" readonly>
+                                    <input type="text" class="form-control"
+                                        value="<?= htmlspecialchars($cliente['Telefono']) ?>" readonly>
                                 </div>
                             </div>
 
                             <div class="form-group mt-4">
                                 <h6>Filtrar por Vehículo:</h6>
                                 <select id="vehiculoFiltro" class="form-control mb-3">
-                                    <option value="todos" <?= $vehiculoSeleccionado === 'todos' ? 'selected' : '' ?>>Todos los vehículos</option>
+                                    <option value="todos" <?= $vehiculoSeleccionado === 'todos' ? 'selected' : '' ?>>
+                                        Todos los vehículos</option>
                                     <?php foreach ($vehiculos as $vehiculo): ?>
-                                        <option value="<?= htmlspecialchars($vehiculo['Nombre']) ?>" <?= $vehiculoSeleccionado === $vehiculo['Nombre'] ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($vehiculo['Nombre']) ?>
-                                        </option>
+                                    <option value="<?= htmlspecialchars($vehiculo['Nombre']) ?>"
+                                        <?= $vehiculoSeleccionado === $vehiculo['Nombre'] ? 'selected' : '' ?>>
+                                        <?= ucfirst(htmlspecialchars($vehiculo['Nombre'])) ?>
+                                    </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -73,24 +77,26 @@
                                     </thead>
                                     <tbody>
                                         <?php foreach ($trabajos as $trabajo): ?>
-                                            <tr>
-                                                <td><?= $trabajo['Fecha'] ?></td>
-                                                <td>$<?= number_format($trabajo['Total'], 2, ',', '.') ?></td>
-                                                <td><?= htmlspecialchars($trabajo['vehiculo']) ?></td>
-                                                <td>
-                                                    <button class="btn btn-info btn-sm" onclick="showDetails(<?= $trabajo['ID_trabajo'] ?>, <?= json_encode($trabajo['Productos']) ?>)">
-                                                        Ver detalles
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                        <tr>
+                                            <td><?= $trabajo['Fecha'] ?></td>
+                                            <td>$<?= number_format($trabajo['Total'], 2, ',', '.') ?></td>
+                                            <td><?= htmlspecialchars($trabajo['vehiculo']) ?></td>
+                                            <td>
+                                                <button class="btn btn-info btn-sm"
+                                                    onclick="showDetails(<?= $trabajo['ID_trabajo'] ?>, <?= json_encode($trabajo['Productos']) ?>)">
+                                                    Ver detalles
+                                                </button>
+                                            </td>
+                                        </tr>
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
                             </div>
+                            <div style="text-align: right;">
+                                <button onclick="event.preventDefault(); history.back();"
+                                    class="btn btn-danger">Atrás</button>
+                            </div>
 
-                            <?php if (count($trabajos) == 0): ?>
-                                <p>No hay trabajos registrados para este cliente.</p>
-                            <?php endif; ?>
 
                         </div>
                     </div>
@@ -145,7 +151,7 @@
                 <tr>
                     <td>${t.Fecha}</td>
                     <td>$${parseFloat(t.Total).toLocaleString('es-AR', {minimumFractionDigits:2})}</td>
-                    <td>${t.vehiculo}</td>
+                    <td>${capitalizar(t.vehiculo)}</td>
                     <td>
                         <button class="btn btn-info btn-sm" onclick='showDetails(${t.ID_trabajo}, ${JSON.stringify(t.Productos)})'>
                             Ver detalles
@@ -204,7 +210,7 @@
     function capitalizar(str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
-    
+
     function showDetails(id, productos) {
         document.getElementById(`m${id}`)?.remove();
 
@@ -213,7 +219,7 @@
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="modalLabel${id}">Detalle de Productos</h5>
+                            <h5 class="modal-title" id="modalLabel${id}">Detalles del Trabajo</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -259,6 +265,6 @@
         modalesContainer.insertAdjacentHTML('beforeend', modalHTML);
         $(`#m${id}`).modal('show');
     }
-</script>
+    </script>
 
 </div>

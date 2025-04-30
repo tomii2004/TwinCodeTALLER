@@ -116,6 +116,7 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
+                            <div id="paginacionProductos" class="d-flex justify-content-center mt-2 mb-2"></div>
                         </div>
                     </div>
 
@@ -128,62 +129,135 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const buscador = document.getElementById('buscadorProducto');
-    const filtroCategoria = document.getElementById('filtroCategoria');
-    const tablaProductos = document.querySelectorAll('#tablaProductos tbody tr');
-    const tablaPresupuesto = document.querySelector('#tablaPresupuesto tbody');
-    const totalPresupuesto = document.getElementById('totalPresupuesto');
-
-    let total = 0;
-    let productosPresupuesto = [];
-
-    // 🔠 Capitalizar nombre de producto
+    // ——— UTILIDADES ———
+    function capitalizar(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
     function capitalizarNombre(nombre) {
         return nombre
             .toLowerCase()
             .split(' ')
-            .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+            .map(p => capitalizar(p))
             .join(' ');
     }
 
-    // 📦 Agregar producto con SweetAlert
+    // ——— ELEMENTOS DOM ———
+    const buscador = document.getElementById('buscadorProducto');
+    const filtroCategoria = document.getElementById('filtroCategoria');
+    const contenedorTabla = document.querySelector('#tablaProductos tbody');
+    const paginacionDiv = document.getElementById('paginacionProductos');
+    const tablaPresupuesto = document.querySelector('#tablaPresupuesto tbody');
+    const totalPresupuesto = document.getElementById('totalPresupuesto');
+
+    // ——— ESTADO GLOBAL ———
+    let total = 0;
+    let productosPresupuesto = [];
+
+    // ——— PAGINACIÓN ———
+    const filasOriginales = Array.from(document.querySelectorAll('#tablaProductos tbody tr'));
+    let productosFiltrados = [...filasOriginales];
+    const productosPorPagina = 6;
+    let currentPage = 1;
+
+    function mostrarProductos(lista) {
+        contenedorTabla.innerHTML = '';
+        lista.forEach(fila => contenedorTabla.appendChild(fila));
+    }
+
+    function mostrarProductosPagina(pagina) {
+        const inicio = (pagina - 1) * productosPorPagina;
+        const fin = inicio + productosPorPagina;
+        mostrarProductos(productosFiltrados.slice(inicio, fin));
+    }
+
+    function cambiarPagina(pagina) {
+        const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
+        if (pagina < 1 || pagina > totalPaginas) return;
+        currentPage = pagina;
+        mostrarProductosPagina(currentPage);
+        generarPaginacion();
+    }
+
+    function generarPaginacion() {
+        const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
+        paginacionDiv.innerHTML = '';
+
+        // Botón "Anterior"
+        const prev = document.createElement('button');
+        prev.textContent = 'Anterior';
+        prev.className = 'btn btn-secondary btn-sm mr-1';
+        prev.disabled = currentPage === 1;
+        prev.addEventListener('click', () => cambiarPagina(currentPage - 1));
+        paginacionDiv.appendChild(prev);
+
+        // Botones de página
+        for (let i = 1; i <= totalPaginas; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = `btn btn-secondary btn-sm mx-1 ${i === currentPage ? 'active' : ''}`;
+            btn.addEventListener('click', () => cambiarPagina(i));
+            paginacionDiv.appendChild(btn);
+        }
+
+        // Botón "Siguiente"
+        const next = document.createElement('button');
+        next.textContent = 'Siguiente';
+        next.className = 'btn btn-secondary btn-sm ml-1';
+        next.disabled = currentPage === totalPaginas;
+        next.addEventListener('click', () => cambiarPagina(currentPage + 1));
+        paginacionDiv.appendChild(next);
+    }
+
+    function aplicarFiltros() {
+        const texto = buscador.value.trim().toLowerCase();
+        const categoria = filtroCategoria.value.toLowerCase();
+        productosFiltrados = filasOriginales.filter(fila => {
+            const nombre = fila.cells[0].textContent.toLowerCase();
+            const cat    = fila.querySelector('.categoria').textContent.toLowerCase();
+            return nombre.includes(texto) && (categoria === 'todas' || cat.includes(categoria));
+        });
+        currentPage = 1;
+        mostrarProductosPagina(currentPage);
+        generarPaginacion();
+    }
+
+    // ——— EVENTOS DE FILTRADO & PAGINACIÓN ———
+    buscador.addEventListener('input', aplicarFiltros);
+    filtroCategoria.addEventListener('change', aplicarFiltros);
+
+    // Inicializa paginación
+    aplicarFiltros();
+
+    // ——— AGREGAR PRODUCTO AL PRESUPUESTO ———
     document.querySelectorAll('.agregarProducto').forEach(boton => {
         boton.addEventListener('click', async () => {
             const nombreOriginal = boton.dataset.nombre;
             const nombre = capitalizarNombre(nombreOriginal);
-
-            const {
-                value: importe
-            } = await Swal.fire({
+            const { value: importe } = await Swal.fire({
                 title: 'Ingrese el importe',
                 input: 'number',
                 inputLabel: nombre,
                 inputPlaceholder: 'Ej: 100.50',
-                inputAttributes: {
-                    min: 0,
-                    step: 'any'
-                },
+                inputAttributes: { min: 0, step: 'any' },
                 showCancelButton: true,
                 confirmButtonText: 'Agregar',
                 cancelButtonText: 'Cancelar',
-                inputValidator: (value) => {
-                    if (!value) return 'Debe ingresar un valor';
-                    if (isNaN(value) || parseFloat(value) < 0)
-                        return 'El valor debe ser un número positivo';
-                    if (value == 0) return 'El valor deber ser mayor a 0';
+                inputValidator: v => {
+                    if (!v) return 'Debe ingresar un valor';
+                    if (isNaN(v) || parseFloat(v) <= 0) return 'Ingrese un número mayor a 0';
                 }
             });
-
             if (importe !== undefined) {
                 const valorUnitario = parseFloat(importe);
                 let cantidad = 1;
-                let subtotal = valorUnitario * cantidad;
-
+                let subtotal = valorUnitario;
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
                     <td>${nombre}</td>
                     <td>
-                        <input type="number" value="${cantidad}" min="1" step="1" class="form-control form-control-sm cantidadPresupuesto" style="width: 70px;">
+                        <input type="number" value="1" min="1" step="1"
+                            class="form-control form-control-sm cantidadPresupuesto"
+                            style="width:70px">
                     </td>
                     <td>$${valorUnitario.toFixed(2)}</td>
                     <td class="subtotalPresupuesto">$${subtotal.toFixed(2)}</td>
@@ -192,156 +266,88 @@ document.addEventListener('DOMContentLoaded', function() {
                     </td>
                 `;
                 tablaPresupuesto.appendChild(fila);
-
                 total += subtotal;
                 totalPresupuesto.innerText = `$${total.toFixed(2)}`;
+                productosPresupuesto.push({ producto: nombre, importe: valorUnitario, cantidad });
 
-                productosPresupuesto.push({
-                    producto: nombre,
-                    importe: valorUnitario,
-                    cantidad
-                });
-
-                // Escuchar cambio de cantidad
-                const inputCantidad = fila.querySelector('.cantidadPresupuesto');
-                inputCantidad.addEventListener('input', () => {
-                    const nuevaCantidad = parseInt(inputCantidad.value) || 1;
-                    const diferencia = (nuevaCantidad - cantidad) * valorUnitario;
-
-                    cantidad = nuevaCantidad;
+                // Cambiar cantidad
+                fila.querySelector('.cantidadPresupuesto').addEventListener('input', e => {
+                    const nueva = parseInt(e.target.value) || 1;
+                    const diff = (nueva - cantidad) * valorUnitario;
+                    cantidad = nueva;
                     subtotal = cantidad * valorUnitario;
-
-                    fila.querySelector('.subtotalPresupuesto').innerText =
-                        `$${subtotal.toFixed(2)}`;
-
-                    total += diferencia;
+                    fila.querySelector('.subtotalPresupuesto').innerText = `$${subtotal.toFixed(2)}`;
+                    total += diff;
                     totalPresupuesto.innerText = `$${total.toFixed(2)}`;
-
-                    // Actualizar en array productosPresupuesto
-                    const item = productosPresupuesto.find(p => p.producto ===
-                        nombre && p.importe === valorUnitario);
-                    if (item) item.cantidad = cantidad;
+                    productosPresupuesto.find(p => p.producto === nombre && p.importe === valorUnitario).cantidad = cantidad;
                 });
 
-                // Quitar producto
+                // Quitar línea
                 fila.querySelector('.quitar').addEventListener('click', () => {
-                    const subtotal = parseFloat(fila.querySelector(
-                            '.subtotalPresupuesto').innerText.replace('$', '')
-                        .replace(',', ''));
                     total -= subtotal;
                     totalPresupuesto.innerText = `$${total.toFixed(2)}`;
                     fila.remove();
-
-                    productosPresupuesto = productosPresupuesto.filter(p => !(p
-                        .producto === nombre && p.importe === valorUnitario
-                    ));
+                    productosPresupuesto = productosPresupuesto.filter(p => !(p.producto === nombre && p.importe === valorUnitario));
                 });
             }
         });
     });
 
-    // 🔍 Buscador en vivo
-    if (buscador) {
-        buscador.addEventListener('input', function() {
-            const texto = this.value.toLowerCase();
-            tablaProductos.forEach(fila => {
-                fila.style.display = fila.textContent.toLowerCase().includes(texto) ? '' :
-                    'none';
-            });
-        });
-    }
-
-    // 📂 Filtro de categoría
-    if (filtroCategoria) {
-        filtroCategoria.addEventListener('change', function() {
-            const categoriaSeleccionada = this.value.toLowerCase();
-            tablaProductos.forEach(fila => {
-                const categoria = fila.querySelector('.categoria').textContent.toLowerCase();
-                fila.style.display = (categoriaSeleccionada === 'todas' || categoria.includes(
-                    categoriaSeleccionada)) ? '' : 'none';
-            });
-        });
-    }
-
-    // 📄 Generar PDF
+    // ——— GENERAR PDF ———
     window.imprimirPDF = async function() {
-        if (productosPresupuesto.length === 0) {
-            return Swal.fire('Atención', 'Agrega al menos un producto al presupuesto.', 'warning');
+        if (!productosPresupuesto.length) {
+            return Swal.fire('Atención', 'Agrega al menos un producto.', 'warning');
         }
-
-        // Tomar valores de los inputs
         const propietario = document.getElementById('inputPropietario').value.trim() || 'No especificado';
-        const vehiculo = document.getElementById('inputVehiculo').value.trim() || 'No especificado';
-
-        
+        const vehiculo    = document.getElementById('inputVehiculo').value.trim() || 'No especificado';
         try {
-            const response = await fetch('?c=presupuestos&a=generarPDF', {
+            const res = await fetch('?c=presupuestos&a=generarPDF', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    datos_pdf: {
-                        productos: productosPresupuesto,
-                        propietario: propietario,
-                        vehiculo: vehiculo
-                    }
-                })
+                headers: { 'Content-Type':'application/json' },
+                body: JSON.stringify({ datos_pdf:{ productos:productosPresupuesto, propietario, vehiculo } })
             });
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-
-            // Generar fecha con el mismo formato que PHP: YYYYMMDD
-            const fecha = new Date();
-            const fechaArchivo = fecha.getFullYear().toString() +
-                String(fecha.getMonth() + 1).padStart(2, '0') +
-                String(fecha.getDate()).padStart(2, '0') + '_' +
-                String(fecha.getHours()).padStart(2, '0') +
-                String(fecha.getMinutes()).padStart(2, '0');
-
+            const blob = await res.blob();
+            const url  = URL.createObjectURL(blob);
+            const now  = new Date();
+            const stamp = now.getFullYear().toString()
+                + String(now.getMonth()+1).padStart(2,'0')
+                + String(now.getDate()).padStart(2,'0') + '_'
+                + String(now.getHours()).padStart(2,'0')
+                + String(now.getMinutes()).padStart(2,'0');
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'presupuesto_' + fechaArchivo + '.pdf';
+            a.download = `presupuesto_${stamp}.pdf`;
             document.body.appendChild(a);
             a.click();
             a.remove();
-            window.URL.revokeObjectURL(url);
-
+            URL.revokeObjectURL(url);
         } catch (err) {
             console.error(err);
             Swal.fire('Error', 'No se pudo generar el PDF.', 'error');
         }
-    }
+    };
 
-    // 🗑️ Limpiar presupuesto
-    const btnLimpiar = document.getElementById('limpiarPresupuesto');
-    if (btnLimpiar) {
-        btnLimpiar.addEventListener('click', () => {
-            if (productosPresupuesto.length === 0) {
-                return Swal.fire('Atención', 'No hay productos que quitar.', 'info');
+    // ——— LIMPIAR PRESUPUESTO ———
+    document.getElementById('limpiarPresupuesto').addEventListener('click', () => {
+        if (!productosPresupuesto.length) {
+            return Swal.fire('Atención', 'No hay productos que quitar.', 'info');
+        }
+        Swal.fire({
+            title: '¿Limpiar presupuesto?',
+            text: 'Se eliminarán todos los productos.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, limpiar',
+            cancelButtonText: 'Cancelar'
+        }).then(res => {
+            if (res.isConfirmed) {
+                tablaPresupuesto.innerHTML = '';
+                total = 0;
+                productosPresupuesto = [];
+                totalPresupuesto.innerText = '$0.00';
+                Swal.fire('Listo', 'Presupuesto vacío.', 'success');
             }
-
-            Swal.fire({
-                title: '¿Limpiar presupuesto?',
-                text: "Se eliminarán todos los productos.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Sí, limpiar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    tablaPresupuesto.innerHTML = '';
-                    total = 0;
-                    productosPresupuesto = [];
-                    totalPresupuesto.innerText = '$0.00';
-                    Swal.fire('Listo', 'Presupuesto vacío.', 'success');
-                }
-            });
         });
-    }
-
+    });
 });
 </script>

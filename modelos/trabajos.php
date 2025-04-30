@@ -17,7 +17,7 @@ class Trabajos
             SELECT t.ID_trabajo, DATE_FORMAT(t.Fecha, '%d/%m/%Y') AS Fecha, t.Total, v.Nombre AS Vehiculo, c.Nombre AS Cliente, t.Nota
             FROM trabajos t
             JOIN vehiculo v ON t.ID_vehiculo = v.ID_vehiculo
-            JOIN clientes c ON v.ID_cliente = c.ID_cliente ORDER BY t.fecha DESC
+            JOIN clientes c ON v.ID_cliente = c.ID_cliente ORDER BY t.Fecha DESC, t.ID_trabajo DESC
         ");
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);

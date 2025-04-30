@@ -10,7 +10,7 @@ class Clientes
 
     public function ObtenerClientes()
     {
-        $query = $this->pdo->prepare("SELECT ID_cliente, Nombre, Telefono FROM clientes  WHERE estado = 1");
+        $query = $this->pdo->prepare("SELECT ID_cliente, Nombre, Telefono,estado FROM clientes ");
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -69,7 +69,7 @@ class Clientes
     public function EliminarCliente($id)
     {
        
-        $sql = $this->pdo->prepare("UPDATE clientes SET estado = 0 WHERE ID_cliente = ?");
+        $sql = $this->pdo->prepare("DELETE FROM clientes WHERE ID_cliente = ?");
         return $sql->execute([$id]);
     }
     
@@ -118,7 +118,14 @@ class Clientes
         return $sql->fetchAll(PDO::FETCH_ASSOC);
     }
 
-
+    public function CambiarEstado($id, $estado){
+        try {
+            $sql = $this->pdo->prepare("UPDATE clientes SET estado = ? WHERE ID_cliente = ?");
+            $sql->execute([$estado, $id]);
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
+    }
 
 
     public function ObtenerVehiculosPorCliente($id_cliente)

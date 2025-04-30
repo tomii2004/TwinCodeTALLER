@@ -14,7 +14,14 @@
         <div class="container-fluid">
             <div class="row mb-3 align-items-center">
                 <div class="col-md-6">
-                    <input type="text" id="buscador" class="form-control form-control-sm" placeholder="Buscar clientes...">
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="buscador" class="form-control" placeholder="Buscar clientes...">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" id="clear-buscador">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-3">
                     <a href="?c=clientes&a=FormNuevo" class="btn btn-primary btn-sm">
@@ -53,6 +60,19 @@
                                             <a class="btn btn-warning btn-sm" href="?c=clientes&a=FormEditar&id=<?= $cliente['ID_cliente'] ?>">
                                                 <i class="fas fa-pen"></i> Editar Cliente
                                             </a>
+                                            <?php if ($cliente['estado'] == 1): ?>
+                                            <a class="btn btn-danger btn-sm"
+                                                href="?c=clientes&a=CambiarEstado&id=<?= $cliente['ID_cliente'] ?>&estado=0"
+                                                title="Desactivar">
+                                                <i class="fas fa-ban"></i>
+                                            </a>
+                                            <?php else: ?>
+                                            <a class="btn btn-success btn-sm"
+                                                href="?c=clientes&a=CambiarEstado&id=<?= $cliente['ID_cliente'] ?>&estado=1"
+                                                title="Activar">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
 
@@ -101,23 +121,14 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="paginacionClientes" class="d-flex justify-content-center mt-2 mb-2"></div>
             </div>
         </div>
     </section>
 </div>
 
 <script>
-    // Buscador en vivo
-    document.getElementById('buscador').addEventListener('input', function() {
-        const filtro = this.value.toLowerCase();
-        const filas = document.querySelectorAll('#tablaclientes tbody tr');
-
-        filas.forEach(fila => {
-            const texto = fila.textContent.toLowerCase();
-            fila.style.display = texto.includes(filtro) ? '' : 'none';
-        });
-    });
-
+    
     // Alerta con SweetAlert2
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -127,7 +138,7 @@
             Swal.fire({
                 icon: 'success',
                 title: 'Registro Exitoso',
-                text: 'cliente añadido correctamente.',
+                text: 'Cliente añadido correctamente.',
                 confirmButtonText: 'OK'
             });
         } else if (alerta === "error") {
@@ -138,5 +149,86 @@
                 confirmButtonText: 'OK'
             });
         }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ——— ELEMENTOS DOM ———
+        const buscador   = document.getElementById('buscador');
+        const clearBtn   = document.getElementById('clear-buscador');
+        const tablaBody  = document.querySelector('#tablaclientes tbody');
+        const paginacion = document.getElementById('paginacionClientes');
+
+        // ——— ESTADO ———
+        const filasOriginales = Array.from(tablaBody.querySelectorAll('tr'));
+        let filasFiltradas    = [...filasOriginales];
+        const filasPorPagina  = 10;
+        let paginaActual      = 1;
+
+        // ——— FUNCIONES ———
+        function mostrarPagina(pagina) {
+            const inicio = (pagina - 1) * filasPorPagina;
+            const fin    = inicio + filasPorPagina;
+            tablaBody.innerHTML = '';
+            filasFiltradas.slice(inicio, fin).forEach(tr => tablaBody.appendChild(tr));
+        }
+
+        function generarPaginacion() {
+            const totalPaginas = Math.ceil(filasFiltradas.length / filasPorPagina);
+            paginacion.innerHTML = '';
+
+            // Anterior
+            const prev = document.createElement('button');
+            prev.textContent = 'Anterior';
+            prev.className   = 'btn btn-secondary btn-sm mr-1';
+            prev.disabled    = paginaActual === 1;
+            prev.addEventListener('click', () => cambiarPagina(paginaActual - 1));
+            paginacion.appendChild(prev);
+
+            // Números
+            for (let i = 1; i <= totalPaginas; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.className  = `btn btn-secondary btn-sm mx-1 ${i === paginaActual ? 'active' : ''}`;
+                btn.addEventListener('click', () => cambiarPagina(i));
+                paginacion.appendChild(btn);
+            }
+
+            // Siguiente
+            const next = document.createElement('button');
+            next.textContent = 'Siguiente';
+            next.className  = 'btn btn-secondary btn-sm ml-1';
+            next.disabled   = paginaActual === totalPaginas || totalPaginas === 0;
+            next.addEventListener('click', () => cambiarPagina(paginaActual + 1));
+            paginacion.appendChild(next);
+        }
+
+        function cambiarPagina(nueva) {
+            const totalPaginas = Math.ceil(filasFiltradas.length / filasPorPagina);
+            if (nueva < 1 || nueva > totalPaginas) return;
+            paginaActual = nueva;
+            mostrarPagina(paginaActual);
+            generarPaginacion();
+        }
+
+        function aplicarFiltros() {
+            const texto = buscador.value.trim().toLowerCase();
+            filasFiltradas = filasOriginales.filter(tr => {
+                return tr.textContent.toLowerCase().includes(texto);
+            });
+            paginaActual = 1;
+            mostrarPagina(paginaActual);
+            generarPaginacion();
+        }
+
+        // ——— EVENTOS ———
+        buscador.addEventListener('input', aplicarFiltros);
+        clearBtn.addEventListener('click', () => {
+            buscador.value = '';
+            aplicarFiltros();
+        });
+
+        // ——— INICIALIZACIÓN ———
+        aplicarFiltros();
     });
 </script>

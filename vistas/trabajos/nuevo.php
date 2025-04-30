@@ -56,7 +56,7 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
                     <div class="col-md-6">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">Presupuesto</h3>
+                                <h3 class="card-title">Trabajo</h3>
                             </div>
                             <div class="card-body table-responsive p-0">
                                 <table class="table table-hover text-nowrap" id="tablaPresupuesto">
@@ -150,6 +150,7 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
+                                <div id="paginacionProductos" class="d-flex justify-content-center mt-2 mb-2"></div>
                             </div>
                         </div>
 
@@ -202,7 +203,7 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
 
                     <div class="form-group">
                         <label for="vehiculoNombre">Modelo</label>
-                        <input type="text" name="vehiculoNombre" id="vehiculoNombre" class="form-control" required oninput="this.value = this.value.toUpperCase()" >
+                        <input type="text" name="vehiculoNombre" id="vehiculoNombre" class="form-control" required >
                         <div class="invalid-feedback">Por favor, ingrese el modelo.</div>
                     </div>
 
@@ -247,8 +248,101 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ——— UTILIDADES ———
+    function capitalizar(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
+    function capitalizarNombre(nombre) {
+        return nombre
+            .toLowerCase()
+            .split(' ')
+            .map(p => capitalizar(p))
+            .join(' ');
+    }
 
+    // ——— ELEMENTOS DOM ———
+    const buscador = document.getElementById('buscadorProducto');
+    const filtroCategoria = document.getElementById('filtroCategoria');
+    const contenedorTabla = document.querySelector('#tablaProductos tbody');
+    const paginacionDiv = document.getElementById('paginacionProductos');
 
+    // ——— ESTADO DE PAGINACIÓN ———
+    const filasOriginales = Array.from(contenedorTabla.querySelectorAll('tr'));
+    let productosFiltrados = [...filasOriginales];
+    const productosPorPagina = 6;
+    let currentPage = 1;
+
+    // ——— FUNCIONES DE PAGINACIÓN ———
+    function mostrarPagina(pagina) {
+        const inicio = (pagina - 1) * productosPorPagina;
+        const fin = inicio + productosPorPagina;
+        contenedorTabla.innerHTML = '';
+        productosFiltrados.slice(inicio, fin).forEach(tr => contenedorTabla.appendChild(tr));
+    }
+
+    function generarPaginacion() {
+        const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
+        paginacionDiv.innerHTML = '';
+
+        // Anterior
+        const prev = document.createElement('button');
+        prev.textContent = 'Anterior';
+        prev.className = 'btn btn-secondary btn-sm mr-1';
+        prev.disabled = currentPage === 1;
+        prev.addEventListener('click', () => cambiarPagina(currentPage - 1));
+        paginacionDiv.appendChild(prev);
+
+        // Números
+        for (let i = 1; i <= totalPaginas; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = `btn btn-secondary btn-sm mx-1 ${i === currentPage ? 'active' : ''}`;
+            btn.addEventListener('click', () => cambiarPagina(i));
+            paginacionDiv.appendChild(btn);
+        }
+
+        // Siguiente
+        const next = document.createElement('button');
+        next.textContent = 'Siguiente';
+        next.className = 'btn btn-secondary btn-sm ml-1';
+        next.disabled = currentPage === totalPaginas || totalPaginas === 0;
+        next.addEventListener('click', () => cambiarPagina(currentPage + 1));
+        paginacionDiv.appendChild(next);
+    }
+
+    function cambiarPagina(pagina) {
+        const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
+        if (pagina < 1 || pagina > totalPaginas) return;
+        currentPage = pagina;
+        mostrarPagina(currentPage);
+        generarPaginacion();
+    }
+
+    function aplicarFiltros() {
+        const texto = buscador.value.trim().toLowerCase();
+        const catSel = filtroCategoria.value.toLowerCase();
+        productosFiltrados = filasOriginales.filter(tr => {
+            const nombre = tr.cells[0].textContent.toLowerCase();
+            const cat    = tr.querySelector('.categoria').textContent.toLowerCase();
+            return nombre.includes(texto) && (catSel === 'todas' || cat.includes(catSel));
+        });
+        currentPage = 1;
+        mostrarPagina(currentPage);
+        generarPaginacion();
+    }
+
+    // ——— EVENTOS DE FILTRADO Y PAGINACIÓN ———
+    buscador.addEventListener('input', aplicarFiltros);
+    filtroCategoria.addEventListener('change', aplicarFiltros);
+    
+
+    // Inicializar paginación
+    aplicarFiltros();
+
+});
+</script>
 <script>
     // Alerta con SweetAlert2
     document.addEventListener("DOMContentLoaded", function() {
@@ -421,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 Swal.fire({
-                    title: '¿Limpiar presupuesto?',
+                    title: '¿Limpiar trabajo?',
                     text: "Se eliminarán todos los productos.",
                     icon: 'warning',
                     showCancelButton: true,
@@ -435,14 +529,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         total = 0;
                         productosPresupuesto = [];
                         totalPresupuesto.innerText = '$0.00';
-                        Swal.fire('Listo', 'Presupuesto vacío.', 'success');
+                        Swal.fire('Listo', 'Trabajo vacío.', 'success');
                     }
                 });
             });
         }
 
     });
-
+    
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
 
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -485,14 +582,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Función para obtener los clientes
         function fetchClientes() {
-            fetch('?c=clientes&a=obtenerClientes') // Cambia esta URL según tu controlador
+            fetch('?c=clientes&a=obtenerClientes')
                 .then(response => response.json())
                 .then(data => {
                     data.forEach(cliente => {
-                        const option = document.createElement('option');
-                        option.value = cliente.ID_cliente;
-                        option.textContent = cliente.Nombre;
-                        clienteSelect.appendChild(option);
+                        if (cliente.estado != 0) { // Solo si está activo
+                            const option = document.createElement('option');
+                            option.value = cliente.ID_cliente;
+                            option.textContent = capitalize(cliente.Nombre);
+                            clienteSelect.appendChild(option);
+                        }
                     });
                 });
         }
@@ -506,7 +605,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     data.forEach(vehiculo => {
                         const option = document.createElement('option');
                         option.value = vehiculo.ID_vehiculo;
-                        option.textContent = vehiculo.Nombre;
+                        option.textContent = capitalize(vehiculo.Nombre);
                         vehiculoSelect.appendChild(option);
                     });
                     vehiculoSelect.disabled = false;
