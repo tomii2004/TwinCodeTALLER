@@ -19,6 +19,16 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
     <!-- Contenido principal -->
     <section class="content">
         <div class="container-fluid">
+            <div class="form-group px-2 pt-2">
+                <label for="inputPropietario">Propietario:</label>
+                <input type="text" class="form-control form-control-sm" id="inputPropietario"
+                    placeholder="Ej: Juan Pérez">
+            </div>
+            <div class="form-group px-2">
+                <label for="inputVehiculo">Vehículo:</label>
+                <input type="text" class="form-control form-control-sm" id="inputVehiculo"
+                    placeholder="Ej: Honda CG 150cc">
+            </div>
             <div class="row">
 
                 <!-- Tabla izquierda: Presupuesto armado -->
@@ -44,7 +54,7 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
                                 <tfoot>
                                     <tr>
                                         <td><strong>Total</strong></td>
-                                        <td colspan="2" id="totalPresupuesto">$0</td>
+                                        <td colspan="3" id="totalPresupuesto">$0</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -65,13 +75,14 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
                     <!-- Filtro y búsqueda -->
                     <div class="row mb-2">
                         <div class="col-md-6">
-                            <input type="text" id="buscadorProducto" class="form-control form-control-sm" placeholder="Buscar producto...">
+                            <input type="text" id="buscadorProducto" class="form-control form-control-sm"
+                                placeholder="Buscar producto...">
                         </div>
                         <div class="col-md-6">
                             <select id="filtroCategoria" class="form-control form-control-sm">
                                 <option value="todas">Todas las categorías</option>
                                 <?php foreach ($categoriasUnicas as $cat): ?>
-                                    <option value="<?= strtolower($cat) ?>"><?= ucfirst($cat) ?></option>
+                                <option value="<?= strtolower($cat) ?>"><?= ucfirst($cat) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -92,15 +103,16 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
                                 </thead>
                                 <tbody>
                                     <?php foreach ($productos as $producto): ?>
-                                        <tr>
-                                            <td><?= ucfirst($producto['nombre']) ?></td>
-                                            <td class="categoria"><?= ucfirst($producto['nombrecat']) ?></td>
-                                            <td>
-                                                <button class="btn btn-success btn-sm agregarProducto" data-nombre="<?= htmlspecialchars($producto['nombre']) ?>">
-                                                    <i class="fas fa-plus"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                    <tr>
+                                        <td><?= ucfirst($producto['nombre']) ?></td>
+                                        <td class="categoria"><?= ucfirst($producto['nombrecat']) ?></td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm agregarProducto"
+                                                data-nombre="<?= htmlspecialchars($producto['nombre']) ?>">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
@@ -115,7 +127,7 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     const buscador = document.getElementById('buscadorProducto');
     const filtroCategoria = document.getElementById('filtroCategoria');
     const tablaProductos = document.querySelectorAll('#tablaProductos tbody tr');
@@ -140,7 +152,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const nombreOriginal = boton.dataset.nombre;
             const nombre = capitalizarNombre(nombreOriginal);
 
-            const { value: importe } = await Swal.fire({
+            const {
+                value: importe
+            } = await Swal.fire({
                 title: 'Ingrese el importe',
                 input: 'number',
                 inputLabel: nombre,
@@ -154,15 +168,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 cancelButtonText: 'Cancelar',
                 inputValidator: (value) => {
                     if (!value) return 'Debe ingresar un valor';
-                    if (isNaN(value) || parseFloat(value) < 0) return 'El valor debe ser un número positivo';
-                    if(value == 0) return 'El valor deber ser mayor a 0';
+                    if (isNaN(value) || parseFloat(value) < 0)
+                        return 'El valor debe ser un número positivo';
+                    if (value == 0) return 'El valor deber ser mayor a 0';
                 }
             });
 
             if (importe !== undefined) {
                 const valorUnitario = parseFloat(importe);
                 let cantidad = 1;
-                let subtotal = valorUnitario * cantidad; 
+                let subtotal = valorUnitario * cantidad;
 
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
@@ -181,7 +196,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 total += subtotal;
                 totalPresupuesto.innerText = `$${total.toFixed(2)}`;
 
-                productosPresupuesto.push({ producto: nombre, importe: valorUnitario,cantidad });
+                productosPresupuesto.push({
+                    producto: nombre,
+                    importe: valorUnitario,
+                    cantidad
+                });
 
                 // Escuchar cambio de cantidad
                 const inputCantidad = fila.querySelector('.cantidadPresupuesto');
@@ -192,24 +211,30 @@ document.addEventListener('DOMContentLoaded', function () {
                     cantidad = nuevaCantidad;
                     subtotal = cantidad * valorUnitario;
 
-                    fila.querySelector('.subtotalPresupuesto').innerText = `$${subtotal.toFixed(2)}`;
+                    fila.querySelector('.subtotalPresupuesto').innerText =
+                        `$${subtotal.toFixed(2)}`;
 
                     total += diferencia;
                     totalPresupuesto.innerText = `$${total.toFixed(2)}`;
 
                     // Actualizar en array productosPresupuesto
-                    const item = productosPresupuesto.find(p => p.producto === nombre && p.importe === valorUnitario);
+                    const item = productosPresupuesto.find(p => p.producto ===
+                        nombre && p.importe === valorUnitario);
                     if (item) item.cantidad = cantidad;
                 });
 
                 // Quitar producto
                 fila.querySelector('.quitar').addEventListener('click', () => {
-                    const subtotal = parseFloat(fila.querySelector('.subtotalPresupuesto').innerText.replace('$', '').replace(',', ''));
+                    const subtotal = parseFloat(fila.querySelector(
+                            '.subtotalPresupuesto').innerText.replace('$', '')
+                        .replace(',', ''));
                     total -= subtotal;
                     totalPresupuesto.innerText = `$${total.toFixed(2)}`;
                     fila.remove();
 
-                    productosPresupuesto = productosPresupuesto.filter(p => !(p.producto === nombre && p.importe === valorUnitario));
+                    productosPresupuesto = productosPresupuesto.filter(p => !(p
+                        .producto === nombre && p.importe === valorUnitario
+                    ));
                 });
             }
         });
@@ -217,38 +242,51 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 🔍 Buscador en vivo
     if (buscador) {
-        buscador.addEventListener('input', function () {
+        buscador.addEventListener('input', function() {
             const texto = this.value.toLowerCase();
             tablaProductos.forEach(fila => {
-                fila.style.display = fila.textContent.toLowerCase().includes(texto) ? '' : 'none';
+                fila.style.display = fila.textContent.toLowerCase().includes(texto) ? '' :
+                    'none';
             });
         });
     }
 
     // 📂 Filtro de categoría
     if (filtroCategoria) {
-        filtroCategoria.addEventListener('change', function () {
+        filtroCategoria.addEventListener('change', function() {
             const categoriaSeleccionada = this.value.toLowerCase();
             tablaProductos.forEach(fila => {
                 const categoria = fila.querySelector('.categoria').textContent.toLowerCase();
-                fila.style.display = (categoriaSeleccionada === 'todas' || categoria.includes(categoriaSeleccionada)) ? '' : 'none';
+                fila.style.display = (categoriaSeleccionada === 'todas' || categoria.includes(
+                    categoriaSeleccionada)) ? '' : 'none';
             });
         });
     }
 
     // 📄 Generar PDF
-    window.imprimirPDF = async function () {
+    window.imprimirPDF = async function() {
         if (productosPresupuesto.length === 0) {
             return Swal.fire('Atención', 'Agrega al menos un producto al presupuesto.', 'warning');
         }
 
+        // Tomar valores de los inputs
+        const propietario = document.getElementById('inputPropietario').value.trim() || 'No especificado';
+        const vehiculo = document.getElementById('inputVehiculo').value.trim() || 'No especificado';
+
+        
         try {
             const response = await fetch('?c=presupuestos&a=generarPDF', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ datos_pdf: productosPresupuesto })
+                body: JSON.stringify({
+                    datos_pdf: {
+                        productos: productosPresupuesto,
+                        propietario: propietario,
+                        vehiculo: vehiculo
+                    }
+                })
             });
 
             const blob = await response.blob();
@@ -257,14 +295,14 @@ document.addEventListener('DOMContentLoaded', function () {
             // Generar fecha con el mismo formato que PHP: YYYYMMDD
             const fecha = new Date();
             const fechaArchivo = fecha.getFullYear().toString() +
-                            String(fecha.getMonth() + 1).padStart(2, '0') +
-                            String(fecha.getDate()).padStart(2, '0') + '_' +
-                            String(fecha.getHours()).padStart(2, '0') +
-                            String(fecha.getMinutes()).padStart(2, '0');
+                String(fecha.getMonth() + 1).padStart(2, '0') +
+                String(fecha.getDate()).padStart(2, '0') + '_' +
+                String(fecha.getHours()).padStart(2, '0') +
+                String(fecha.getMinutes()).padStart(2, '0');
 
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'presupuesto_' + fechaArchivo + '.pdf'; 
+            a.download = 'presupuesto_' + fechaArchivo + '.pdf';
             document.body.appendChild(a);
             a.click();
             a.remove();

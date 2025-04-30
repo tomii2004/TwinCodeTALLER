@@ -41,8 +41,8 @@
                         <div class="card-body">
                             <table class="table table-bordered">
                                 <tr>
-                                    <th>Ingresos (Servicios)</th>
-                                    <td>$<?= number_format($datosCaja['ingresos'], 2) ?></td>
+                                    <th>Total Trabajo</th>
+                                    <td>$<?= number_format($datosCaja['total'], 2) ?></td>
                                 </tr>
                                 <tr>
                                     <th>Egresos (Repuestos)</th>
@@ -50,7 +50,7 @@
                                 </tr>
                                 <tr>
                                     <th>Ganancia</th>
-                                    <td><strong>$<?= number_format($datosCaja['ganancia'], 2) ?></strong></td>
+                                    <td><strong>$<?= number_format($datosCaja['ingresos'], 2) ?></strong></td>
                                 </tr>
                             </table>
                         </div>

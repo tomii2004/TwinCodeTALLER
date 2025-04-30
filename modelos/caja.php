@@ -47,7 +47,7 @@ class Caja
             'fecha'    => $fecha,
             'ingresos' => $ingresos,
             'egresos'  => $egresos,
-            'ganancia' => $ingresos - $egresos
+            'total' => $ingresos + $egresos
         ];
     }
 
