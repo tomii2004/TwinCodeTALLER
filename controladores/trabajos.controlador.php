@@ -176,4 +176,28 @@ class TrabajosControlador
 
         exit;
     }
+
+    public function filtrarPorFecha() {
+        // Obtener las fechas desde la URL
+        $fecha_inicio = $_GET['fecha_inicio'];  // Formato YYYY-MM-DD
+        $fecha_fin = $_GET['fecha_fin'];  // Formato YYYY-MM-DD
+
+        // Asegurarse de que las fechas son válidas
+        if (empty($fecha_inicio) || empty($fecha_fin)) {
+            echo json_encode(['error' => 'Fechas inválidas']);
+            return;
+        }
+
+        // Convertir las fechas a formato de base de datos (si es necesario)
+        $fecha_inicio = date('Y-m-d', strtotime($fecha_inicio)); // Asegurarse de que el formato sea correcto
+        $fecha_fin = date('Y-m-d', strtotime($fecha_fin));
+
+        // Consultar los trabajos dentro de ese rango de fechas
+      
+        $trabajosFiltrados =$this->modeloTrabajo->obtenerTrabajosPorFecha($fecha_inicio, $fecha_fin);
+
+        // Devolver los resultados como JSON
+        echo json_encode(['trabajos' => $trabajosFiltrados]);
+    }
+
 }

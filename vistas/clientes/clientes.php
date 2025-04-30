@@ -4,7 +4,7 @@
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1>Clientes</h1>
-                    <small>Gestión de Clientes</small>
+                    
                 </div>
             </div>
         </div>
@@ -66,19 +66,20 @@
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
                                                 </div>
-                                                <form action="?c=clientes&a=AgregarVehiculo" method="POST">
+                                                <form action="?c=clientes&a=AgregarVehiculo" method="POST"  autocomplete="off">
                                                     <div class="modal-body">
                                                         <div class="form-group">
                                                             <label for="vehiculoNombre">Modelo del Vehículo:</label>
-                                                            <input type="text" class="form-control" id="vehiculoNombre" name="vehiculoNombre" required>
+                                                            <input type="text" class="form-control" id="vehiculoNombre" name="vehiculoNombre" required oninput="this.value = this.value.toUpperCase()">
+
                                                         </div>
                                                         <div class="form-group">
                                                             <label for="numeroMotor">Número de motor:</label>
-                                                            <input type="text" class="form-control" id="numeroMotor" name="numeroMotor" required>
+                                                            <input type="text" class="form-control" id="numeroMotor" name="numeroMotor" required oninput="this.value = this.value.toUpperCase()">
                                                         </div>
                                                         <div class="form-group">
                                                             <label for="numeroChasis">Número de chasis:</label>
-                                                            <input type="text" class="form-control" id="numeroChasis" name="numeroChasis" required>
+                                                            <input type="text" class="form-control" id="numeroChasis" name="numeroChasis" required oninput="this.value = this.value.toUpperCase()">
                                                         </div>
 
                                                         <input type="hidden" name="clienteID" value="<?= $cliente['ID_cliente'] ?>">

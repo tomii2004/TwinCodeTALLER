@@ -17,36 +17,36 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
                 </div>
 
                 <div class="row">
-    <div class="col-md-6">
-        <label for="cliente">Cliente</label>
-        <select id="cliente" name="cliente" class="form-control form-control-sm">
-            <option value="">Seleccionar Cliente</option>
-        </select>
-    </div>
+                    <div class="col-md-6">
+                        <label for="cliente">Cliente</label>
+                        <select id="cliente" name="cliente" class="form-control form-control-sm">
+                            <option value="">Seleccionar Cliente</option>
+                        </select>
+                    </div>
 
-    <div class="col-md-6">
-        <label for="vehiculo">Vehículo</label>
-        <select id="vehiculo" name="vehiculo" class="form-control form-control-sm" disabled>
-            <option value="">Seleccionar Vehículo</option>
-        </select>
-    </div>
+                    <div class="col-md-6">
+                        <label for="vehiculo">Vehículo</label>
+                        <select id="vehiculo" name="vehiculo" class="form-control form-control-sm" disabled>
+                            <option value="">Seleccionar Vehículo</option>
+                        </select>
+                    </div>
 
-    <div class="col-md-6">
-        <label for="chasis">Número de Chasis</label>
-        <input type="text" id="chasis" class="form-control form-control-sm" readonly disabled>
-    </div>
+                    <div class="col-md-6">
+                        <label for="chasis">Número de Chasis</label>
+                        <input type="text" id="chasis" class="form-control form-control-sm" readonly disabled>
+                    </div>
 
-    <div class="col-md-6">
-        <label for="motor">Número de Motor</label>
-        <input type="text" id="motor" class="form-control form-control-sm" readonly disabled>
-    </div>
-<!-- Coloca estos dos botones en una fila distinta para que se alineen mejor -->
-<div class="col-md-12 d-flex mt-3">
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#nuevoClienteModal">
-    <i class="fas fa-plus"></i> Nuevo Cliente
-</button>
-</div>
-</div>
+                    <div class="col-md-6">
+                        <label for="motor">Número de Motor</label>
+                        <input type="text" id="motor" class="form-control form-control-sm" readonly disabled>
+                    </div>
+                    <!-- Coloca estos dos botones en una fila distinta para que se alineen mejor -->
+                    <div class="col-md-12 d-flex mt-3">
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#nuevoClienteModal">
+                            <i class="fas fa-plus"></i> Nuevo Cliente
+                        </button>
+                    </div>
+                </div>
 
         </section>
 
@@ -164,68 +164,92 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
 </div>
 <!-- Modal -->
 <div class="modal fade" id="nuevoClienteModal" tabindex="-1" aria-labelledby="nuevoClienteModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="nuevoClienteModalLabel">Agregar nuevo cliente</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form action="?c=clientes&a=AgregarClienteEnTrabajo" method="post">
-        <div class="modal-body">
-          <!-- Información del Cliente -->
-          <div class="form-group">
-            <label for="nombre">Nombre:</label>
-            <div class="input-group">
-              <div class="input-group-prepend">
-                <span class="input-group-text"><i class="fas fa-user"></i></span>
-              </div>
-              <input type="text" class="form-control" id="nombre" name="nombre" required>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="nuevoClienteModalLabel">Agregar nuevo cliente</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-          </div>
+            <form action="?c=clientes&a=AgregarClienteEnTrabajo" method="post" class="needs-validation" novalidate autocomplete="off">
+                <div class="modal-body">
+                    <!-- Información del Cliente -->
+                    <div class="form-group">
+                        <label for="nombre">Nombre:</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            </div>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            <div class="invalid-feedback">Por favor, ingrese el nombre.</div>
+                        </div>
+                    </div>
 
-          <div class="form-group">
-            <label for="telefono">Teléfono:</label>
-            <div class="input-group">
-              <div class="input-group-prepend">
-                <span class="input-group-text"><i class="fas fa-phone"></i></span>
-              </div>
-              <input type="text" class="form-control" id="telefono" name="telefono" required>
-            </div>
-          </div>
+                    <div class="form-group">
+                        <label for="telefono">Teléfono:</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                            </div>
+                            <input type="text" class="form-control" id="telefono" name="telefono" required>
+                            <div class="invalid-feedback">Por favor, ingrese el teléfono.</div>
+                        </div>
+                    </div>
 
-          <hr>
-          <h5>Datos del Vehículo</h5>
-          <div class="form-group">
-            <label for="vehiculoNombre">Modelo</label>
-            <input type="text" name="vehiculoNombre" id="vehiculoNombre" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="numeroMotor">Número de Motor</label>
-            <input type="text" name="numeroMotor" id="numeroMotor" class="form-control" required>
-          </div>
-          <div class="form-group">
-            <label for="numeroChasis">Número de Chasis</label>
-            <input type="text" name="numeroChasis" id="numeroChasis" class="form-control" required>
-          </div>
+                    <hr>
+                    <h5>Datos del Vehículo</h5>
+
+                    <div class="form-group">
+                        <label for="vehiculoNombre">Modelo</label>
+                        <input type="text" name="vehiculoNombre" id="vehiculoNombre" class="form-control" required oninput="this.value = this.value.toUpperCase()" >
+                        <div class="invalid-feedback">Por favor, ingrese el modelo.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numeroMotor">Número de Motor</label>
+                        <input type="text" name="numeroMotor" id="numeroMotor" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                        <div class="invalid-feedback">Por favor, ingrese el número de motor.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numeroChasis">Número de Chasis</label>
+                        <input type="text" name="numeroChasis" id="numeroChasis" class="form-control" required oninput="this.value = this.value.toUpperCase()">
+                        <div class="invalid-feedback">Por favor, ingrese el número de chasis.</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                </div>
+            </form>
+
         </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">
-            <i class="fas fa-arrow-left"></i> Cancelar
-          </button>
-          <button type="submit" class="btn btn-primary">
-            <i class="fas fa-save"></i> Guardar
-          </button>
-        </div>
-      </form>
     </div>
-  </div>
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+  const forms = document.querySelectorAll('.needs-validation');
+  Array.from(forms).forEach(form => {
+    form.addEventListener('submit', function (event) {
+      if (!form.checkValidity()) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      form.classList.add('was-validated');
+    });
+  });
+});
+</script>
 
+
+<script>
     // Alerta con SweetAlert2
     document.addEventListener("DOMContentLoaded", function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -385,7 +409,7 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
             });
         }
 
-       
+
 
 
         // 🗑️ Limpiar presupuesto

@@ -4,7 +4,7 @@
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1>Trabajos</h1>
-                    <small>Gestión de Trabajos</small>
+
                 </div>
             </div>
         </div>
@@ -34,6 +34,9 @@
                     <label for="filtroFechaFin" class="form-label">Fecha Fin</label>
                     <input type="date" id="filtroFechaFin" class="form-control form-control-sm">
                 </div>
+                
+                
+
             </div>
 
             <!-- Filtro por rango de fecha -->
@@ -41,7 +44,11 @@
                 <div class="col-md-10">
                     <button id="filtroRangoFecha" class="btn btn-info btn-sm w-100">Filtrar por Rango de Fecha</button>
                 </div>
+                <div class="col-md-2">
+                <button id="limpiarFiltro" class="btn btn-danger btn-sm">Limpiar Filtro</button>
+                </div>
             </div>
+            
 
 
             <div class="card">
@@ -139,6 +146,120 @@
     }
 
 
+    document.addEventListener("DOMContentLoaded", function() {
+    let trabajosOriginales = <?= json_encode($trabajos); ?>;  // Lista completa de trabajos (sin filtrar)
+    let trabajosFiltrados = [...trabajosOriginales];  // Copia de la lista original que puede ser filtrada
+    let trabajosPorPagina = 5;
+    let currentPage = 1;
+
+    // Función para mostrar los trabajos en la tabla
+    function mostrarTrabajos(trabajos) {
+        const tablaCuerpo = document.getElementById('trabajosTableBody');
+        tablaCuerpo.innerHTML = '';  // Limpiar tabla antes de insertar nuevos datos
+
+        // Insertar los trabajos en la tabla
+        trabajos.forEach(trabajo => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${trabajo['ID_trabajo']}</td>
+                <td>${trabajo['Cliente']}</td>
+                <td>${trabajo['Vehiculo']}</td>
+                <td>${trabajo['Fecha']}</td>
+                <td>${trabajo['Total']}</td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="showDetails(${trabajo['ID_trabajo']})">
+                        <i class="fas fa-eye"></i> Detalles
+                    </button>
+                </td>
+            `;
+            tablaCuerpo.appendChild(tr);
+        });
+    }
+
+    // Función para mostrar los trabajos de una página específica
+    function mostrarTrabajosPagina(pagina) {
+        const inicio = (pagina - 1) * trabajosPorPagina;
+        const fin = inicio + trabajosPorPagina;
+        const trabajosPaginados = trabajosFiltrados.slice(inicio, fin);
+
+        // Limpiar la tabla y mostrar los trabajos filtrados y paginados
+        mostrarTrabajos(trabajosPaginados);
+    }
+
+    // Función para generar los botones de paginación
+    function generarPaginacion() {
+        const paginationDiv = document.getElementById('pagination');
+        paginationDiv.innerHTML = '';
+
+        // Calcular el número total de páginas
+        const totalPaginas = Math.ceil(trabajosFiltrados.length / trabajosPorPagina);
+
+        // Crear botones de "Anterior" y "Siguiente"
+        const prevButton = document.createElement('button');
+        prevButton.textContent = 'Anterior';
+        prevButton.className = 'btn btn-secondary btn-sm';
+        prevButton.disabled = currentPage === 1;
+        prevButton.addEventListener('click', () => cambiarPagina(currentPage - 1));
+        paginationDiv.appendChild(prevButton);
+
+        // Crear los botones de las páginas
+        for (let i = 1; i <= totalPaginas; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            pageButton.className = `btn btn-secondary btn-sm mx-1 ${i === currentPage ? 'active' : ''}`;
+            pageButton.addEventListener('click', () => cambiarPagina(i));
+            paginationDiv.appendChild(pageButton);
+        }
+
+        // Crear el botón de "Siguiente"
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Siguiente';
+        nextButton.className = 'btn btn-secondary btn-sm';
+        nextButton.disabled = currentPage === totalPaginas;
+        nextButton.addEventListener('click', () => cambiarPagina(currentPage + 1));
+        paginationDiv.appendChild(nextButton);
+    }
+
+    // Función para cambiar la página
+    function cambiarPagina(pagina) {
+        const totalPaginas = Math.ceil(trabajosFiltrados.length / trabajosPorPagina);
+        if (pagina < 1 || pagina > totalPaginas) return;
+
+        currentPage = pagina;
+        mostrarTrabajosPagina(currentPage);
+        generarPaginacion();
+    }
+
+    // Al hacer clic en el botón de "Filtrar por Rango de Fecha"
+    document.getElementById('filtroRangoFecha').addEventListener('click', async function() {
+        const fechaInicio = document.getElementById('filtroFechaInicio').value;
+        const fechaFin = document.getElementById('filtroFechaFin').value;
+
+        // Verificar que ambas fechas están seleccionadas
+        if (!fechaInicio || !fechaFin) {
+            alert('Por favor, selecciona ambas fechas para el filtro.');
+            return;
+        }
+
+        try {
+            // Realizar la solicitud Fetch para obtener los trabajos filtrados
+            const res = await fetch(`?c=trabajos&a=filtrarPorFecha&fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`);
+            const data = await res.json();
+
+            if (data.error) {
+                alert(data.error);  // Mostrar mensaje de error si no hay resultados
+            } else {
+                trabajosFiltrados = data.trabajos; // Actualizar trabajos filtrados
+                currentPage = 1;  // Resetear a la primera página al aplicar el filtro
+                mostrarTrabajosPagina(currentPage);  // Mostrar los trabajos filtrados en la primera página
+                generarPaginacion();  // Generar los botones de paginación para los resultados filtrados
+            }
+        } catch (error) {
+            console.error('Error al filtrar los trabajos:', error);
+            alert('Ocurrió un error al filtrar los trabajos.');
+        }
+    });
+
     // Buscador en vivo para trabajos
     document.getElementById('buscadorTrabajos').addEventListener('input', function() {
         const filtro = this.value.toLowerCase();
@@ -150,111 +271,21 @@
         });
     });
 
-    // Alerta con SweetAlert2 (igual que en clientes)
-    document.addEventListener("DOMContentLoaded", function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const alerta = urlParams.get("alerta");
-
-        if (alerta === "success") {
-            Swal.fire({
-                icon: 'success',
-                title: 'Registro Exitoso',
-                text: 'Trabajo añadido correctamente.',
-                confirmButtonText: 'OK'
-            });
-        } else if (alerta === "error") {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Hubo un problema al agregar el trabajo.',
-                confirmButtonText: 'OK'
-            });
-        }
+    // Función para limpiar los filtros y volver a mostrar todos los trabajos
+    document.getElementById('limpiarFiltro').addEventListener('click', function() {
+        // Restablecer la lista de trabajos filtrados a la lista original
+        trabajosFiltrados = [...trabajosOriginales];
+        currentPage = 1;  // Volver a la primera página
+        mostrarTrabajosPagina(currentPage);  // Mostrar todos los trabajos en la primera página
+        generarPaginacion();  // Generar los botones de paginación para los trabajos no filtrados
+        document.getElementById('filtroFechaInicio').value = '';  // Limpiar los campos de filtro
+        document.getElementById('filtroFechaFin').value = '';
     });
-</script>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const trabajosPorPagina = 5;
-        const trabajos = <?= json_encode($trabajos); ?>;
-        const totalTrabajos = trabajos.length;
+    // Inicializar la página
+    mostrarTrabajosPagina(currentPage);
+    generarPaginacion();
+});
 
-        // Calcular el número total de páginas
-        const totalPaginas = Math.ceil(totalTrabajos / trabajosPorPagina);
 
-        // Función para mostrar los trabajos en una página específica
-        function mostrarTrabajos(pagina) {
-            const inicio = (pagina - 1) * trabajosPorPagina;
-            const fin = inicio + trabajosPorPagina;
-            const trabajosPaginados = trabajos.slice(inicio, fin);
-
-            // Limpiar el cuerpo de la tabla
-            const tablaCuerpo = document.getElementById('trabajosTableBody');
-            tablaCuerpo.innerHTML = '';
-
-            // Insertar los trabajos en la tabla
-            trabajosPaginados.forEach(trabajo => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${trabajo['ID_trabajo']}</td>
-                    <td>${trabajo['Cliente']}</td>
-                    <td>${trabajo['Vehiculo']}</td>
-                    <td>${trabajo['Fecha']}</td>
-                    <td>${trabajo['Total']}</td>
-                    <td>
-                        <button class="btn btn-info btn-sm" onclick="showDetails(${trabajo['ID_trabajo']})">
-    <i class="fas fa-eye"></i> Detalles
-</button>
-
-                    </td>
-                `;
-                tablaCuerpo.appendChild(tr);
-            });
-        }
-
-        // Función para generar los botones de paginación
-        function generarPaginacion() {
-            const paginationDiv = document.getElementById('pagination');
-            paginationDiv.innerHTML = '';
-
-            // Crear botones de "Anterior" y "Siguiente"
-            const prevButton = document.createElement('button');
-            prevButton.textContent = 'Anterior';
-            prevButton.className = 'btn btn-secondary btn-sm';
-            prevButton.disabled = currentPage === 1;
-            prevButton.addEventListener('click', () => cambiarPagina(currentPage - 1));
-            paginationDiv.appendChild(prevButton);
-
-            // Crear los botones de las páginas
-            for (let i = 1; i <= totalPaginas; i++) {
-                const pageButton = document.createElement('button');
-                pageButton.textContent = i;
-                pageButton.className = `btn btn-secondary btn-sm mx-1 ${i === currentPage ? 'active' : ''}`;
-                pageButton.addEventListener('click', () => cambiarPagina(i));
-                paginationDiv.appendChild(pageButton);
-            }
-
-            // Crear el botón de "Siguiente"
-            const nextButton = document.createElement('button');
-            nextButton.textContent = 'Siguiente';
-            nextButton.className = 'btn btn-secondary btn-sm';
-            nextButton.disabled = currentPage === totalPaginas;
-            nextButton.addEventListener('click', () => cambiarPagina(currentPage + 1));
-            paginationDiv.appendChild(nextButton);
-        }
-
-        // Función para cambiar la página
-        let currentPage = 1;
-
-        function cambiarPagina(pagina) {
-            if (pagina < 1 || pagina > totalPaginas) return;
-            currentPage = pagina;
-            mostrarTrabajos(currentPage);
-            generarPaginacion();
-        }
-
-        // Inicializar la página
-        mostrarTrabajos(currentPage);
-        generarPaginacion();
-    });
 </script>

@@ -81,4 +81,31 @@ class Trabajos
         $sql->execute([$id_trabajo]);
         return $sql->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function obtenerTrabajosPorFecha($fecha_inicio, $fecha_fin) {
+        // Suponiendo que tienes una conexión a la base de datos llamada $db
+        $sql = "SELECT 
+    t.ID_trabajo, 
+    DATE_FORMAT(t.Fecha, '%d/%m/%Y') AS Fecha, 
+    t.Total, 
+    v.Nombre AS Vehiculo,
+    v.ID_vehiculo,
+    v.ID_cliente,
+    c.Nombre AS Cliente, 
+    t.Nota
+FROM trabajos t
+JOIN vehiculo v ON t.ID_vehiculo = v.ID_vehiculo
+JOIN clientes c ON v.ID_cliente = c.ID_cliente
+WHERE t.Fecha BETWEEN :fecha_inicio AND :fecha_fin
+ORDER BY t.Fecha DESC
+";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':fecha_inicio', $fecha_inicio);
+        $stmt->bindParam(':fecha_fin', $fecha_fin);
+        $stmt->execute();
+
+        // Obtener los resultados
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }
