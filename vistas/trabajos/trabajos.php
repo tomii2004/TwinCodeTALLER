@@ -58,7 +58,7 @@
                             </tr>
                         </thead>
                         <tbody id="trabajosTableBody">
-                            
+
                         </tbody>
                     </table>
                 </div>
@@ -70,9 +70,75 @@
             </div>
         </div>
     </section>
+    <div id="modalesContainer"></div>
+
 </div>
 
 <script>
+    async function showDetails(id) {
+        document.getElementById(`m${id}`)?.remove();
+
+        try {
+            const res = await fetch(`?c=trabajos&a=ObtenerProductosTrabajoJSON&ID_trabajo=${id}`);
+            const productos = await res.json();
+
+            let modalHTML = `
+            <div class="modal fade" id="m${id}" tabindex="-1" role="dialog" aria-labelledby="modalLabel${id}" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabel${id}">Detalle de Productos</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            ${productos.length > 0 ? `
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio Unitario</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${productos.map(p => `
+                                            <tr>
+                                                <td>${p.NombreProducto}</td>
+                                                <td>${p.Cantidad}</td>
+                                                <td>$${parseFloat(p.PrecioUnitario).toFixed(2)}</td>
+                                                <td>$${(p.Cantidad * p.PrecioUnitario).toFixed(2)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="3" class="text-right">Total</th>
+                                            <th>$${productos.reduce((sum, p) => sum + (p.Cantidad * p.PrecioUnitario), 0).toFixed(2)}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            ` : '<p>No hay productos para mostrar.</p>'}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+            modalesContainer.insertAdjacentHTML('beforeend', modalHTML);
+            $(`#m${id}`).modal('show');
+        } catch (error) {
+            console.error('Error al obtener productos:', error);
+            alert('No se pudieron cargar los productos.');
+        }
+    }
+
+
     // Buscador en vivo para trabajos
     document.getElementById('buscadorTrabajos').addEventListener('input', function() {
         const filtro = this.value.toLowerCase();
@@ -136,9 +202,10 @@
                     <td>${trabajo['Fecha']}</td>
                     <td>${trabajo['Total']}</td>
                     <td>
-                        <a class="btn btn-info btn-sm" href="?c=trabajos&a=Detalles&id=${trabajo['ID_trabajo']}">
-                            <i class="fas fa-eye"></i> Detalles
-                        </a>
+                        <button class="btn btn-info btn-sm" onclick="showDetails(${trabajo['ID_trabajo']})">
+    <i class="fas fa-eye"></i> Detalles
+</button>
+
                     </td>
                 `;
                 tablaCuerpo.appendChild(tr);

@@ -29,6 +29,14 @@ class TrabajosControlador
         require_once "vistas/trabajos/trabajos.php";
         require_once "vistas/pie.php";
     }
+    public function ObtenerProductosTrabajoJSON()
+    {
+        $idTrabajo = $_GET['ID_trabajo'];
+        $productos = $this->modeloTrabajo->ObtenerProductosPorTrabajo($idTrabajo);
+        echo json_encode($productos);
+    }
+
+
 
     public function nuevoTrabajo()
     {

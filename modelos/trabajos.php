@@ -69,4 +69,16 @@ class Trabajos
             $stmt->execute();
         }
     }
+
+    public function ObtenerProductosPorTrabajo($id_trabajo)
+    {
+        $sql = $this->pdo->prepare("
+        SELECT p.Nombre AS NombreProducto, tp.Cantidad, tp.PrecioUnitario
+        FROM trabajos_productos tp
+        INNER JOIN productos p ON tp.ID_producto = p.ID_productos
+        WHERE tp.ID_trabajo = ?
+    ");
+        $sql->execute([$id_trabajo]);
+        return $sql->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
