@@ -92,8 +92,8 @@
                                 <tbody>
                         <?php endif; ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($d['categoria']) ?></td>
-                                        <td><?= htmlspecialchars($d['producto']) ?></td>
+                                        <td><?= ucfirst(htmlspecialchars($d['categoria'])) ?></td>
+                                        <td><?= ucfirst(htmlspecialchars($d['producto'])) ?></td>
                                         <td class="text-center"><?= $d['cantidad'] ?></td>
                                         <td class="text-right">$<?= number_format($d['preciounitario'], 2) ?></td>
                                         <td class="text-right">$<?= number_format($d['total'], 2) ?></td>

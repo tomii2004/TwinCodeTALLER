@@ -82,6 +82,10 @@
 </div>
 
 <script>
+    function capitalizar(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
     async function showDetails(id) {
         document.getElementById(`m${id}`)?.remove();
 
@@ -113,7 +117,7 @@
                                     <tbody>
                                         ${productos.map(p => `
                                             <tr>
-                                                <td>${p.NombreProducto}</td>
+                                                <td>${capitalizar(p.NombreProducto)}</td>
                                                 <td>${p.Cantidad}</td>
                                                 <td>$${parseFloat(p.PrecioUnitario).toFixed(2)}</td>
                                                 <td>$${(p.Cantidad * p.PrecioUnitario).toFixed(2)}</td>

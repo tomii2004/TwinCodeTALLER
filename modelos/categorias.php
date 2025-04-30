@@ -10,7 +10,7 @@ class Categorias{
 
     public function Listar(){
         try {
-            $query = $this->pdo->prepare("SELECT ID_categoria,nombre as Nombre FROM categorias");
+            $query = $this->pdo->prepare("SELECT ID_categoria,nombre as Nombre,estado FROM categorias");
             $query->execute();
             return $query->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
@@ -65,6 +65,14 @@ class Categorias{
         $sql = $this->pdo->prepare("SELECT COUNT(*) FROM productos WHERE ID_categoria = ?");
         $sql->execute([$id]);
         return $sql->fetchColumn() > 0; // Retorna true si está en uso
+    }
+    public function CambiarEstado($id, $estado){
+        try {
+            $sql = $this->pdo->prepare("UPDATE categorias SET estado = ? WHERE ID_categoria = ?");
+            $sql->execute([$estado, $id]);
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
     }
 }
 

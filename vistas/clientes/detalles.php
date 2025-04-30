@@ -67,7 +67,7 @@
                                         <tr>
                                             <th>Fecha</th>
                                             <th>Total</th>
-                                            <th>Vehículo (Chasis)</th>
+                                            <th>Vehículo</th>
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
@@ -201,6 +201,10 @@
     filtro.addEventListener('change', () => cargar(filtro.value));
     cargar(filtro.value);
 
+    function capitalizar(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    
     function showDetails(id, productos) {
         document.getElementById(`m${id}`)?.remove();
 
@@ -228,7 +232,7 @@
                                     <tbody>
                                         ${productos.map(p => `
                                             <tr>
-                                                <td>${p.NombreProducto}</td>
+                                                <td>${capitalizar(p.NombreProducto)}</td>
                                                 <td>${p.Cantidad}</td>
                                                 <td>$${parseFloat(p.PrecioUnitario).toFixed(2)}</td>
                                                 <td>$${(p.Cantidad * p.PrecioUnitario).toFixed(2)}</td>
