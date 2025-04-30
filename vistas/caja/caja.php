@@ -73,7 +73,7 @@
                         <div class="card-header">
                             <h5 class="card-title">
                                 Trabajo #<?= $d['ID_trabajo'] ?>
-                                — Cliente: <?= htmlspecialchars($d['nombre_cliente'] ?: '—') ?>
+                                — Cliente: <?= ucfirst(htmlspecialchars($d['nombre_cliente'] ?: '—')) ?>
                                 — Nota: <?= htmlspecialchars($d['Nota'] ?: '—') ?>
                                 — Total Trabajo: $<?= number_format($d['total_trabajo'], 2) ?>
                             </h5>
