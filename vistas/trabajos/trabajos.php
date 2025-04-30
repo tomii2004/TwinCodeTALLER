@@ -4,7 +4,7 @@
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1>Trabajos</h1>
-
+                    <small>Definir Trabajos</small>
                 </div>
             </div>
         </div>
