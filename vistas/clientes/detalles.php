@@ -78,7 +78,7 @@
                                                 <td>$<?= number_format($trabajo['Total'], 2, ',', '.') ?></td>
                                                 <td><?= htmlspecialchars($trabajo['vehiculo']) ?></td>
                                                 <td>
-                                                    <button class="btn btn-info btn-sm" onclick='showDetails(<?= $trabajo['ID_trabajo'] ?>, <?= json_encode($trabajo['Productos']) ?>)'>
+                                                    <button class="btn btn-info btn-sm" onclick="showDetails(<?= $trabajo['ID_trabajo'] ?>, <?= json_encode($trabajo['Productos']) ?>)">
                                                         Ver detalles
                                                     </button>
                                                 </td>
@@ -103,7 +103,7 @@
     <div id="modales"></div>
 
     <script>
-    const clienteID = <?= json_encode($_GET['id']) ?>;
+    const clienteID = <?= isset($_GET['id']) ? json_encode($_GET['id']) : 'null' ?>;
     const filtro = document.getElementById('vehiculoFiltro');
     const tbody = document.querySelector('#tablaTrabajos tbody');
     const modalesContainer = document.getElementById('modales');
