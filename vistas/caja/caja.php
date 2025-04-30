@@ -41,7 +41,7 @@
                         <div class="card-body">
                             <table class="table table-bordered">
                                 <tr>
-                                    <th>Total Trabajo</th>
+                                    <th>Total Trabajado</th>
                                     <td>$<?= number_format($datosCaja['total'], 2) ?></td>
                                 </tr>
                                 <tr>

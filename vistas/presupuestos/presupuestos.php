@@ -17,17 +17,17 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
     </section>
 
     <!-- Contenido principal -->
-    <section class="content">
+    <section class="content" >
         <div class="container-fluid">
             <div class="form-group px-2 pt-2">
                 <label for="inputPropietario">Propietario:</label>
                 <input type="text" class="form-control form-control-sm" id="inputPropietario"
-                    placeholder="Ej: Juan Pérez">
+                    placeholder="Ej: Juan Pérez" autocomplete="off">
             </div>
             <div class="form-group px-2">
                 <label for="inputVehiculo">Vehículo:</label>
                 <input type="text" class="form-control form-control-sm" id="inputVehiculo"
-                    placeholder="Ej: Honda CG 150cc">
+                    placeholder="Ej: Honda CG 150cc" autocomplete="off">
             </div>
             <div class="row">
 
@@ -76,7 +76,7 @@ $categoriasUnicas = array_unique(array_column($productos, 'nombrecat'));
                     <div class="row mb-2">
                         <div class="col-md-6">
                             <input type="text" id="buscadorProducto" class="form-control form-control-sm"
-                                placeholder="Buscar producto...">
+                                placeholder="Buscar producto..." autocomplete="off">
                         </div>
                         <div class="col-md-6">
                             <select id="filtroCategoria" class="form-control form-control-sm">
