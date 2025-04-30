@@ -19,63 +19,118 @@ class PresupuestosControlador {
     public function generarPDF() {
         require 'dompdf/vendor/autoload.php';
     
-        $datos = json_decode(file_get_contents("php://input"), true)['datos_pdf'];
+        $input = json_decode(file_get_contents("php://input"), true)['datos_pdf'];
     
+        $productos = $input['productos'];
+        $propietario = $input['propietario'] ?? 'No especificado';
+        $vehiculo = $input['vehiculo'] ?? 'No especificado';
+        
         $fecha = date('d/m/Y');
         $fechaArchivo = date('Ymd');
-    
+        
         $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logojb1.png'));
     
         $html = '
         <style>
-            body { font-family: Arial, sans-serif; font-size: 13px; }
-            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-            .logo img { width: 130px; }
-            .titulo { text-align: right; }
-            .titulo h2 { margin: 0; font-size: 22px; }
-            .fecha { text-align: right; font-size: 12px; margin-top: 3px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #333; padding: 8px 10px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            tr:nth-child(even) { background-color: #fafafa; }
-            .total { text-align: right; font-weight: bold; padding: 10px; margin-top: 10px; }
+            body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
+            .header { margin-bottom: 20px; text-align: center; }
+            .logo img { width: 120px; }
+            .header-title { font-size: 22px; margin: 5px 0 0 0; }
+            .header-table { 
+                width: 100%; 
+                margin-top: 10px; 
+                font-size: 11px; 
+                border: none; 
+                border-collapse: collapse;
+            }
+            .header-table td { 
+                vertical-align: top; 
+                border: none;
+            }
+            .products-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .products-table th {
+                background-color: #eee;
+                border: 1px solid #000;
+                padding: 5px;
+                text-align: center;
+            }
+            .products-table td {
+                padding: 5px;
+                text-align: center;
+                border: none;
+            }
+            .products-table tfoot td {
+                border-top: 1px solid #000;
+                padding: 5px;
+            }
         </style>
-    
+
         <div class="header">
             <div class="logo">
                 <img src="'.$logo.'" alt="Logo">
             </div>
-            <div class="titulo">
-                <h2>Presupuesto</h2>
-                <div class="fecha">Fecha: '.$fecha.'</div>
-            </div>
+            <h2 class="header-title">Taller de Motos JB</h2>
+
+            <table class="header-table">
+                <tr>
+                    <td style="text-align: left;">
+                        Larriera 1425<br>
+                        Venado Tuerto, Santa Fe
+                    </td>
+                    <td style="text-align: right;">
+                        MONOTRIBUTO: Cat. A<br>
+                        CUIL: 20-39110870-7
+                    </td>
+                </tr>
+            </table>
         </div>
-    
-        <table>
+
+        <hr>
+
+        <h3 style="text-align: center;">Presupuesto</h3>
+        <p><strong>Propietario:</strong> ' . $propietario . '</p>
+        <p><strong>Vehiculo:</strong> ' . $vehiculo . '</p>
+
+        <table class="products-table">
             <thead>
                 <tr>
                     <th>Producto</th>
+                    <th>Importe Unitario</th>
                     <th>Cantidad</th>
-                    <th>Precio Unitario</th>
                     <th>Subtotal</th>
                 </tr>
             </thead>
             <tbody>';
-    
         $total = 0;
-        foreach ($datos as $item) {
+        foreach ($productos as $item) {
             $subtotal = $item['importe'] * $item['cantidad'];
-            $html .= "<tr>
-                        <td>{$item['producto']}</td>
-                        <td>{$item['cantidad']}</td>
-                        <td>$ " . number_format($item['importe'], 2) . "</td>
-                        <td>$ " . number_format($subtotal, 2) . "</td>
-                      </tr>";
             $total += $subtotal;
+            $html .= '
+                <tr>
+                    <td>' . htmlspecialchars($item['producto']) . '</td>
+                    <td>$' . number_format($item['importe'], 2) . '</td>
+                    <td>' . intval($item['cantidad']) . '</td>
+                    <td>$' . number_format($subtotal, 2) . '</td>
+                </tr>';
         }
-    
-        $html .= '</tbody></table>';
-        $html .= '<div class="total">Total: $ ' . number_format($total, 2) . '</div>';
+        $html .= '
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+                    <td><strong>$' . number_format($total, 2) . '</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+      
+        <p><strong>Importante:</strong> El siguiente presupuesto tendra vigencia 15 dias luego de su emision </p>
+
+        ';
+
     
         $dompdf = new Dompdf\Dompdf();
         $dompdf->loadHtml($html);
@@ -85,7 +140,6 @@ class PresupuestosControlador {
         header('Content-Type: application/pdf');
         header('Content-Disposition: attachment; filename="presupuesto_'.$fechaArchivo.'.pdf"');
         echo $dompdf->output();
-    
         exit;
     }
 }
