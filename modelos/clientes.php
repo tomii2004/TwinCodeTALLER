@@ -10,7 +10,7 @@ class Clientes
 
     public function ObtenerClientes()
     {
-        $query = $this->pdo->prepare("SELECT ID_cliente, Nombre, Telefono FROM clientes");
+        $query = $this->pdo->prepare("SELECT ID_cliente, Nombre, Telefono FROM clientes  WHERE estado = 1");
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -68,9 +68,11 @@ class Clientes
 
     public function EliminarCliente($id)
     {
-        $sql = $this->pdo->prepare("DELETE FROM clientes WHERE ID_cliente = ?");
+       
+        $sql = $this->pdo->prepare("UPDATE clientes SET estado = 0 WHERE ID_cliente = ?");
         return $sql->execute([$id]);
     }
+    
 
     public function ObtenerTrabajos($id_cliente, $vehiculo = 'todos')
     {
