@@ -67,9 +67,11 @@ class Caja
                 p.nombre                          AS producto,
                 SUM(tp.cantidad)                  AS cantidad,
                 tp.preciounitario,
-                SUM(tp.cantidad * tp.preciounitario) AS total
+                SUM(tp.cantidad * tp.preciounitario) AS total,
+                cl.nombre AS nombre_cliente
             FROM trabajos_productos tp
             INNER JOIN trabajos t    ON t.ID_trabajo     = tp.ID_trabajo
+            INNER JOIN clientes cl ON t.ID_cliente = cl.ID_cliente
             INNER JOIN productos p   ON p.ID_productos    = tp.ID_producto
             INNER JOIN categorias c  ON c.ID_categoria    = p.ID_categoria
             WHERE DATE(t.Fecha) = ?
