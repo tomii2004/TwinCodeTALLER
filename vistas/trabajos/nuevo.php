@@ -381,6 +381,11 @@ document.addEventListener('DOMContentLoaded', function() {
         let total = 0;
         let productosPresupuesto = [];
 
+        const clienteSelect = document.getElementById('cliente');
+        const vehiculoSelect = document.getElementById('vehiculo');
+        const chasisInput = document.getElementById('chasis');
+        const motorInput = document.getElementById('motor');
+
         // Capitalizar nombre
         function capitalizarNombre(nombre) {
             return nombre
@@ -391,88 +396,91 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // ——— Al hacer click en “+ Agregar” ———
-        document.querySelectorAll('.agregarProducto').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const idProducto = btn.dataset.id;
-                const nombre = capitalizarNombre(btn.dataset.nombre);
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.agregarProducto');
+            const idProducto = btn.dataset.id;
+            const nombre = capitalizarNombre(btn.dataset.nombre);
 
-                const {
-                    value: importe
-                } = await Swal.fire({
-                    title: 'Ingrese el importe',
-                    input: 'number',
-                    inputLabel: nombre,
-                    inputPlaceholder: 'Ej: 100.50',
-                    inputAttributes: {
-                        min: 0,
-                        step: 'any'
-                    },
-                    showCancelButton: true,
-                    confirmButtonText: 'Agregar',
-                    cancelButtonText: 'Cancelar',
-                    inputValidator: v => {
-                        if (!v) return 'Debe ingresar un valor';
-                        if (isNaN(v) || parseFloat(v) <= 0) return 'El valor debe ser un número positivo';
-                    }
-                });
-                if (importe === undefined) return;
+            const {
+                value: importe
+            } = await Swal.fire({
+                title: 'Ingrese el importe',
+                input: 'number',
+                inputLabel: nombre,
+                inputPlaceholder: 'Ej: 100.50',
+                inputAttributes: {
+                    min: 0,
+                    step: 'any'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Agregar',
+                cancelButtonText: 'Cancelar',
+                inputValidator: v => {
+                    if (!v) return 'Debe ingresar un valor';
+                    if (isNaN(v) || parseFloat(v) <= 0) return 'El valor debe ser un número positivo';
+                }
+            });
+            if (importe === undefined) return;
 
-                const valorUnitario = parseFloat(importe);
-                let cantidad = 1;
-                let subtotal = valorUnitario;
+            const valorUnitario = parseFloat(importe);
+            let cantidad = 1;
+            let subtotal = valorUnitario;
 
-                // Crear fila en presupuesto
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                <td>${nombre}</td>
-                <td>
-                  <input type="number" value="1" min="1" class="cantidadPresupuesto form-control form-control-sm" style="width:70px;">
-                </td>
-                <td>$${valorUnitario.toFixed(2)}</td>
-                <td class="subtotalPresupuesto">$${subtotal.toFixed(2)}</td>
-                <td>
-                  <button type="button" class="btn btn-danger btn-sm quitar"><i class="fas fa-times"></i></button>
-                </td>
-            `;
-                tablaPresupuesto.appendChild(tr);
+            // Crear fila en presupuesto
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+            <td>${nombre}</td>
+            <td>
+                <input type="number" value="1" min="1" class="cantidadPresupuesto form-control form-control-sm" style="width:70px;">
+            </td>
+            <td>$${valorUnitario.toFixed(2)}</td>
+            <td class="subtotalPresupuesto">$${subtotal.toFixed(2)}</td>
+            <td>
+                <button type="button" class="btn btn-danger btn-sm quitar"><i class="fas fa-times"></i></button>
+            </td>
+        `;
+            tablaPresupuesto.appendChild(tr);
 
-                // Agregar al array y total
-                productosPresupuesto.push({
-                    id_producto: idProducto,
-                    nombre,
-                    importe: valorUnitario,
-                    cantidad
-                });
-                total += subtotal;
+            // Agregar al array y total
+            productosPresupuesto.push({
+                id_producto: idProducto,
+                nombre,
+                importe: valorUnitario,
+                cantidad
+            });
+            total += subtotal;
+            totalPresupuestoEl.innerText = `$${total.toFixed(2)}`;
+
+            // — Cambio de cantidad —
+            tr.querySelector('.cantidadPresupuesto').addEventListener('input', e => {
+                const nueva = parseInt(e.target.value) || 1;
+                const diff = (nueva - cantidad) * valorUnitario;
+                cantidad = nueva;
+                subtotal = cantidad * valorUnitario;
+                tr.querySelector('.subtotalPresupuesto').innerText = `$${subtotal.toFixed(2)}`;
+                total += diff;
                 totalPresupuestoEl.innerText = `$${total.toFixed(2)}`;
+                productosPresupuesto.find(p => p.id_producto == idProducto).cantidad = cantidad;
+            });
 
-                // — Cambio de cantidad —
-                tr.querySelector('.cantidadPresupuesto').addEventListener('input', e => {
-                    const nueva = parseInt(e.target.value) || 1;
-                    const diff = (nueva - cantidad) * valorUnitario;
-                    cantidad = nueva;
-                    subtotal = cantidad * valorUnitario;
-                    tr.querySelector('.subtotalPresupuesto').innerText = `$${subtotal.toFixed(2)}`;
-                    total += diff;
-                    totalPresupuestoEl.innerText = `$${total.toFixed(2)}`;
-                    productosPresupuesto.find(p => p.id_producto == idProducto).cantidad = cantidad;
-                });
-
-                // — Quitar producto —
-                tr.querySelector('.quitar').addEventListener('click', () => {
-                    total -= subtotal;
-                    totalPresupuestoEl.innerText = `$${total.toFixed(2)}`;
-                    tr.remove();
-                    productosPresupuesto = productosPresupuesto.filter(p => p.id_producto != idProducto);
-                });
+            // — Quitar producto —
+            tr.querySelector('.quitar').addEventListener('click', () => {
+                total -= subtotal;
+                totalPresupuestoEl.innerText = `$${total.toFixed(2)}`;
+                tr.remove();
+                productosPresupuesto = productosPresupuesto.filter(p => p.id_producto != idProducto);
             });
         });
+        
 
         // ——— Al enviar el formulario ———
         form.addEventListener('submit', e => {
             e.preventDefault();
             if (productosPresupuesto.length === 0) {
                 return Swal.fire('Atención', 'Debes agregar al menos un producto.', 'warning');
+            }
+            if (!clienteSelect.value) {
+                return Swal.fire('Atención', 'Debe seleccionar un cliente antes de guardar el trabajo.', 'warning');
             }
             // Serializar a JSON en hidden inputs
             productosHidden.value = JSON.stringify(productosPresupuesto);
@@ -534,19 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         }
-
-    });
-    
-    function capitalize(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    }
-
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const clienteSelect = document.getElementById('cliente');
-        const vehiculoSelect = document.getElementById('vehiculo');
-        const chasisInput = document.getElementById('chasis');
-        const motorInput = document.getElementById('motor');
+        
 
         // Cargar clientes cuando se cargue la página
         fetchClientes();
@@ -624,4 +620,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         }
     });
+    
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
+
+
+        
+    
 </script>

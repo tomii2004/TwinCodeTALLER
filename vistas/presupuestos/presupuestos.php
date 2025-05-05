@@ -230,65 +230,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ——— AGREGAR PRODUCTO AL PRESUPUESTO ———
     document.querySelectorAll('.agregarProducto').forEach(boton => {
-        boton.addEventListener('click', async () => {
-            const nombreOriginal = boton.dataset.nombre;
-            const nombre = capitalizarNombre(nombreOriginal);
-            const { value: importe } = await Swal.fire({
-                title: 'Ingrese el importe',
-                input: 'number',
-                inputLabel: nombre,
-                inputPlaceholder: 'Ej: 100.50',
-                inputAttributes: { min: 0, step: 'any' },
-                showCancelButton: true,
-                confirmButtonText: 'Agregar',
-                cancelButtonText: 'Cancelar',
-                inputValidator: v => {
-                    if (!v) return 'Debe ingresar un valor';
-                    if (isNaN(v) || parseFloat(v) <= 0) return 'Ingrese un número mayor a 0';
+        contenedorTabla.addEventListener('click', async function (e) {
+            if (e.target.closest('.agregarProducto')) {
+                const boton = e.target.closest('.agregarProducto');
+                const nombreOriginal = boton.dataset.nombre;
+                const nombre = capitalizarNombre(nombreOriginal);
+
+                const { value: importe } = await Swal.fire({
+                    title: 'Ingrese el importe',
+                    input: 'number',
+                    inputLabel: nombre,
+                    inputPlaceholder: 'Ej: 100.50',
+                    inputAttributes: { min: 0, step: 'any' },
+                    showCancelButton: true,
+                    confirmButtonText: 'Agregar',
+                    cancelButtonText: 'Cancelar',
+                    inputValidator: v => {
+                        if (!v) return 'Debe ingresar un valor';
+                        if (isNaN(v) || parseFloat(v) <= 0) return 'Ingrese un número mayor a 0';
+                    }
+                });
+
+                if (importe !== undefined) {
+                    const valorUnitario = parseFloat(importe);
+                    let cantidad = 1;
+                    let subtotal = valorUnitario;
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${nombre}</td>
+                        <td>
+                            <input type="number" value="1" min="1" step="1"
+                                class="form-control form-control-sm cantidadPresupuesto"
+                                style="width:70px">
+                        </td>
+                        <td>$${valorUnitario.toFixed(2)}</td>
+                        <td class="subtotalPresupuesto">$${subtotal.toFixed(2)}</td>
+                        <td>
+                            <button class="btn btn-danger btn-sm quitar"><i class="fas fa-times"></i></button>
+                        </td>
+                    `;
+                    tablaPresupuesto.appendChild(fila);
+                    total += subtotal;
+                    totalPresupuesto.innerText = `$${total.toFixed(2)}`;
+                    productosPresupuesto.push({ producto: nombre, importe: valorUnitario, cantidad });
+
+                    // Cambiar cantidad
+                    fila.querySelector('.cantidadPresupuesto').addEventListener('input', e => {
+                        const nueva = parseInt(e.target.value) || 1;
+                        const diff = (nueva - cantidad) * valorUnitario;
+                        cantidad = nueva;
+                        subtotal = cantidad * valorUnitario;
+                        fila.querySelector('.subtotalPresupuesto').innerText = `$${subtotal.toFixed(2)}`;
+                        total += diff;
+                        totalPresupuesto.innerText = `$${total.toFixed(2)}`;
+                        productosPresupuesto.find(p => p.producto === nombre && p.importe === valorUnitario).cantidad = cantidad;
+                    });
+
+                    // Quitar línea
+                    fila.querySelector('.quitar').addEventListener('click', () => {
+                        total -= subtotal;
+                        totalPresupuesto.innerText = `$${total.toFixed(2)}`;
+                        fila.remove();
+                        productosPresupuesto = productosPresupuesto.filter(p => !(p.producto === nombre && p.importe === valorUnitario));
+                    });
                 }
-            });
-            if (importe !== undefined) {
-                const valorUnitario = parseFloat(importe);
-                let cantidad = 1;
-                let subtotal = valorUnitario;
-                const fila = document.createElement('tr');
-                fila.innerHTML = `
-                    <td>${nombre}</td>
-                    <td>
-                        <input type="number" value="1" min="1" step="1"
-                            class="form-control form-control-sm cantidadPresupuesto"
-                            style="width:70px">
-                    </td>
-                    <td>$${valorUnitario.toFixed(2)}</td>
-                    <td class="subtotalPresupuesto">$${subtotal.toFixed(2)}</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm quitar"><i class="fas fa-times"></i></button>
-                    </td>
-                `;
-                tablaPresupuesto.appendChild(fila);
-                total += subtotal;
-                totalPresupuesto.innerText = `$${total.toFixed(2)}`;
-                productosPresupuesto.push({ producto: nombre, importe: valorUnitario, cantidad });
-
-                // Cambiar cantidad
-                fila.querySelector('.cantidadPresupuesto').addEventListener('input', e => {
-                    const nueva = parseInt(e.target.value) || 1;
-                    const diff = (nueva - cantidad) * valorUnitario;
-                    cantidad = nueva;
-                    subtotal = cantidad * valorUnitario;
-                    fila.querySelector('.subtotalPresupuesto').innerText = `$${subtotal.toFixed(2)}`;
-                    total += diff;
-                    totalPresupuesto.innerText = `$${total.toFixed(2)}`;
-                    productosPresupuesto.find(p => p.producto === nombre && p.importe === valorUnitario).cantidad = cantidad;
-                });
-
-                // Quitar línea
-                fila.querySelector('.quitar').addEventListener('click', () => {
-                    total -= subtotal;
-                    totalPresupuesto.innerText = `$${total.toFixed(2)}`;
-                    fila.remove();
-                    productosPresupuesto = productosPresupuesto.filter(p => !(p.producto === nombre && p.importe === valorUnitario));
-                });
             }
         });
     });

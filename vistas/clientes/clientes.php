@@ -90,7 +90,7 @@
                                                     <div class="modal-body">
                                                         <div class="form-group">
                                                             <label for="vehiculoNombre">Modelo del Vehículo:</label>
-                                                            <input type="text" class="form-control" id="vehiculoNombre" name="vehiculoNombre" placeholder="Ej" required>
+                                                            <input type="text" class="form-control" id="vehiculoNombre" name="vehiculoNombre" placeholder="Ej: Honda Wave" required>
 
                                                         </div>
                                                         <div class="form-group">
@@ -138,7 +138,7 @@
             Swal.fire({
                 icon: 'success',
                 title: 'Registro Exitoso',
-                text: 'Cliente añadido correctamente.',
+                text: 'Vehiculo añadido correctamente.',
                 confirmButtonText: 'OK'
             });
         } else if (alerta === "error") {
