@@ -14,6 +14,7 @@
   <!-- Theme style -->
   <link rel="stylesheet" href="dist/css/adminlte.min.css">
   <link rel="stylesheet" href="plugins/fullcalendar/main.css">
+  <link rel="icon" href="vistas/favicon.ico" type="image/x-icon">
   <script src="plugins/fullcalendar/main.js"></script>
   <script src="plugins/fullcalendar/locales/es.js"></script>
   <link rel="stylesheet" href="vistas/estilospropios.css">
@@ -44,7 +45,7 @@
 
   <!-- Preloader -->
   <div class="preloader flex-column justify-content-center align-items-center">
-    <img class="animation__wobble" src="dist/img/logojb1.png" alt="AdminLTELogo" height="100" width="100">
+    <img class="animation__wobble" src="dist/img/logojb1.png" alt="TallerJB" height="100" width="100">
   </div>
 
   <!-- Navbar -->

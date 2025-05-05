@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
   <!-- AdminLTE -->
   <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <link rel="icon" href="vistas/favicon.ico" type="image/x-icon">
 
   <style>
     body.login-page {
