@@ -90,7 +90,7 @@
                                                     <div class="modal-body">
                                                         <div class="form-group">
                                                             <label for="vehiculoNombre">Modelo del Vehículo:</label>
-                                                            <input type="text" class="form-control" id="vehiculoNombre" name="vehiculoNombre" required>
+                                                            <input type="text" class="form-control" id="vehiculoNombre" name="vehiculoNombre" placeholder="Ej" required>
 
                                                         </div>
                                                         <div class="form-group">
