@@ -34,8 +34,8 @@
                     <label for="filtroFechaFin" class="form-label">Fecha Fin</label>
                     <input type="date" id="filtroFechaFin" class="form-control form-control-sm">
                 </div>
-                
-                
+
+
 
             </div>
 
@@ -45,10 +45,10 @@
                     <button id="filtroRangoFecha" class="btn btn-info btn-sm w-100">Filtrar por Rango de Fecha</button>
                 </div>
                 <div class="col-md-2">
-                <button id="limpiarFiltro" class="btn btn-danger btn-sm">Limpiar Filtro</button>
+                    <button id="limpiarFiltro" class="btn btn-danger btn-sm">Limpiar Filtro</button>
                 </div>
             </div>
-            
+
 
 
             <div class="card">
@@ -82,221 +82,261 @@
 </div>
 
 <script>
+    // Variables globales
+    let trabajosOriginales = <?= json_encode($trabajos); ?>; // Traída desde PHP
+    let trabajosFiltrados = [...trabajosOriginales];
+    let trabajosPorPagina = 5;
+    let currentPage = 1;
+    let detalleTrabajoActual = null;
+
     function capitalizar(str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
     }
 
     async function showDetails(id) {
+        // Eliminamos cualquier modal previo
         document.getElementById(`m${id}`)?.remove();
 
         try {
-            const res = await fetch(`?c=trabajos&a=ObtenerProductosTrabajoJSON&ID_trabajo=${id}`);
-            const productos = await res.json();
+            // Encontramos el trabajo para obtener Cliente y Vehículo
+            const trabajo = trabajosOriginales.find(t => t.ID_trabajo === id);
+            if (!trabajo) throw new Error("Trabajo no encontrado");
 
+            // Traemos los productos del trabajo
+            const res = await fetch(`?c=trabajos&a=ObtenerProductosTrabajoJSON&ID_trabajo=${id}`);
+            const productosRaw = await res.json();
+
+            // Normalizamos los productos
+            const productos = productosRaw.map(p => ({
+                NombreProducto: capitalizar(p.NombreProducto),
+                Cantidad: p.Cantidad,
+                PrecioUnitario: parseFloat(p.PrecioUnitario),
+                Subtotal: parseFloat((p.Cantidad * p.PrecioUnitario).toFixed(2))
+            }));
+
+            // Guardamos los datos en la variable global
+            // …
+            detalleTrabajoActual = {
+                id_trabajo: trabajo.ID_trabajo,
+                fecha: trabajo.Fecha,
+                total: parseFloat(trabajo.Total),
+                cliente: capitalizar(trabajo.Cliente),
+                vehiculo: capitalizar(trabajo.Vehiculo),
+                nota: trabajo.Nota,
+                productos
+            };
+
+            // Construimos el HTML del modal
             let modalHTML = `
             <div class="modal fade" id="m${id}" tabindex="-1" role="dialog" aria-labelledby="modalLabel${id}" aria-hidden="true">
-                <div class="modal-dialog modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modalLabel${id}">Detalles del Trabajo</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            ${productos.length > 0 ? `
-                                <table class="table table-bordered">
-                                    <thead>
-                                        <tr>
-                                            <th>Producto</th>
-                                            <th>Cantidad</th>
-                                            <th>Precio Unitario</th>
-                                            <th>Subtotal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${productos.map(p => `
-                                            <tr>
-                                                <td>${capitalizar(p.NombreProducto)}</td>
-                                                <td>${p.Cantidad}</td>
-                                                <td>$${parseFloat(p.PrecioUnitario).toFixed(2)}</td>
-                                                <td>$${(p.Cantidad * p.PrecioUnitario).toFixed(2)}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <th colspan="3" class="text-right">Total</th>
-                                            <th>$${productos.reduce((sum, p) => sum + (p.Cantidad * p.PrecioUnitario), 0).toFixed(2)}</th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            ` : '<p>No hay productos para mostrar.</p>'}
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        </div>
+              <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel${id}">Detalles del Trabajo</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  </div>
+                  <div class="modal-body">
+                    ${productos.length > 0
+                      ? `<table class="table table-bordered">
+                          <thead>
+                            <tr>
+                              <th>Producto</th><th>Cantidad</th><th>Precio Unitario</th><th>Subtotal</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${productos.map(p => `
+                              <tr>
+                                <td>${p.NombreProducto}</td>
+                                <td>${p.Cantidad}</td>
+                                <td>$${p.PrecioUnitario.toFixed(2)}</td>
+                                <td>$${p.Subtotal.toFixed(2)}</td>
+                              </tr>
+                            `).join('')}
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <th colspan="3" class="text-right">Total</th>
+                              <th>$${productos.reduce((s,p) => s + p.Subtotal, 0).toFixed(2)}</th>
+                            </tr>
+                          </tfoot>
+                        </table>`
+                      : '<p>No hay productos para mostrar.</p>'}
+                    <div class="alert alert-secondary text-start mt-3" role="alert" style="white-space:">
+                        <strong>Nota:</strong><br>
+                        ${detalleTrabajoActual.nota}
                     </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-danger" onclick="generarPresupuestoPDF()">Generar PDF</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                  </div>
                 </div>
-            </div>
-        `;
+              </div>
+            </div>`;
 
-            modalesContainer.insertAdjacentHTML('beforeend', modalHTML);
+            // Insertamos y mostramos el modal
+            document.getElementById('modalesContainer').insertAdjacentHTML('beforeend', modalHTML);
             $(`#m${id}`).modal('show');
+
         } catch (error) {
-            console.error('Error al obtener productos:', error);
-            alert('No se pudieron cargar los productos.');
+            console.error('Error al obtener detalles del trabajo:', error);
+            alert('No se pudieron cargar los detalles del trabajo.');
         }
     }
 
-
-    document.addEventListener("DOMContentLoaded", function() {
-    let trabajosOriginales = <?= json_encode($trabajos); ?>;  // Lista completa de trabajos (sin filtrar)
-    let trabajosFiltrados = [...trabajosOriginales];  // Copia de la lista original que puede ser filtrada
-    let trabajosPorPagina = 5;
-    let currentPage = 1;
-
-    // Función para mostrar los trabajos en la tabla
     function mostrarTrabajos(trabajos) {
-        const tablaCuerpo = document.getElementById('trabajosTableBody');
-        tablaCuerpo.innerHTML = '';  // Limpiar tabla antes de insertar nuevos datos
-
-        // Insertar los trabajos en la tabla
+        const tbody = document.getElementById('trabajosTableBody');
+        tbody.innerHTML = '';
         trabajos.forEach(trabajo => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${trabajo['ID_trabajo']}</td>
-                <td>${capitalizar(trabajo['Cliente'])}</td>
-                <td>${capitalizar(trabajo['Vehiculo'])}</td>
-                <td>${trabajo['Fecha']}</td>
-                <td>${trabajo['Total']}</td>
+                <td>${trabajo.ID_trabajo}</td>
+                <td>${capitalizar(trabajo.Cliente)}</td>
+                <td>${capitalizar(trabajo.Vehiculo)}</td>
+                <td>${trabajo.Fecha}</td>
+                <td>${trabajo.Total}</td>
                 <td>
-                    <button class="btn btn-info btn-sm" onclick="showDetails(${trabajo['ID_trabajo']})">
-                        <i class="fas fa-eye"></i> Detalles
-                    </button>
-                </td>
-            `;
-            tablaCuerpo.appendChild(tr);
+                  <button class="btn btn-info btn-sm" onclick="showDetails(${trabajo.ID_trabajo})">
+                    <i class="fas fa-eye"></i> Detalles
+                  </button>
+                </td>`;
+            tbody.appendChild(tr);
         });
     }
 
-    // Función para mostrar los trabajos de una página específica
     function mostrarTrabajosPagina(pagina) {
-        const inicio = (pagina - 1) * trabajosPorPagina;
-        const fin = inicio + trabajosPorPagina;
-        const trabajosPaginados = trabajosFiltrados.slice(inicio, fin);
-
-        // Limpiar la tabla y mostrar los trabajos filtrados y paginados
-        mostrarTrabajos(trabajosPaginados);
+        const start = (pagina - 1) * trabajosPorPagina;
+        const end = start + trabajosPorPagina;
+        mostrarTrabajos(trabajosFiltrados.slice(start, end));
     }
 
-    // Función para generar los botones de paginación
     function generarPaginacion() {
-        const paginationDiv = document.getElementById('pagination');
-        paginationDiv.innerHTML = '';
+        const div = document.getElementById('pagination');
+        div.innerHTML = '';
+        const totalPages = Math.ceil(trabajosFiltrados.length / trabajosPorPagina);
 
-        // Calcular el número total de páginas
-        const totalPaginas = Math.ceil(trabajosFiltrados.length / trabajosPorPagina);
+        const prev = document.createElement('button');
+        prev.textContent = 'Anterior';
+        prev.className = 'btn btn-secondary btn-sm';
+        prev.disabled = currentPage === 1;
+        prev.onclick = () => cambiarPagina(currentPage - 1);
+        div.appendChild(prev);
 
-        // Crear botones de "Anterior" y "Siguiente"
-        const prevButton = document.createElement('button');
-        prevButton.textContent = 'Anterior';
-        prevButton.className = 'btn btn-secondary btn-sm';
-        prevButton.disabled = currentPage === 1;
-        prevButton.addEventListener('click', () => cambiarPagina(currentPage - 1));
-        paginationDiv.appendChild(prevButton);
-
-        // Crear los botones de las páginas
-        for (let i = 1; i <= totalPaginas; i++) {
-            const pageButton = document.createElement('button');
-            pageButton.textContent = i;
-            pageButton.className = `btn btn-secondary btn-sm mx-1 ${i === currentPage ? 'active' : ''}`;
-            pageButton.addEventListener('click', () => cambiarPagina(i));
-            paginationDiv.appendChild(pageButton);
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = `btn btn-secondary btn-sm mx-1 ${i === currentPage ? 'active' : ''}`;
+            btn.onclick = () => cambiarPagina(i);
+            div.appendChild(btn);
         }
 
-        // Crear el botón de "Siguiente"
-        const nextButton = document.createElement('button');
-        nextButton.textContent = 'Siguiente';
-        nextButton.className = 'btn btn-secondary btn-sm';
-        nextButton.disabled = currentPage === totalPaginas;
-        nextButton.addEventListener('click', () => cambiarPagina(currentPage + 1));
-        paginationDiv.appendChild(nextButton);
+        const next = document.createElement('button');
+        next.textContent = 'Siguiente';
+        next.className = 'btn btn-secondary btn-sm';
+        next.disabled = currentPage === totalPages;
+        next.onclick = () => cambiarPagina(currentPage + 1);
+        div.appendChild(next);
     }
 
-    // Función para cambiar la página
     function cambiarPagina(pagina) {
-        const totalPaginas = Math.ceil(trabajosFiltrados.length / trabajosPorPagina);
-        if (pagina < 1 || pagina > totalPaginas) return;
-
+        const totalPages = Math.ceil(trabajosFiltrados.length / trabajosPorPagina);
+        if (pagina < 1 || pagina > totalPages) return;
         currentPage = pagina;
         mostrarTrabajosPagina(currentPage);
         generarPaginacion();
     }
 
-    // Al hacer clic en el botón de "Filtrar por Rango de Fecha"
-    document.getElementById('filtroRangoFecha').addEventListener('click', async function() {
-        const fechaInicio = document.getElementById('filtroFechaInicio').value;
-        const fechaFin = document.getElementById('filtroFechaFin').value;
-
-        // Verificar que ambas fechas están seleccionadas
-        if (!fechaInicio || !fechaFin) {
-            alert('Por favor, selecciona ambas fechas para el filtro.');
-            return;
+    document.getElementById('filtroRangoFecha').addEventListener('click', async () => {
+        const inicio = document.getElementById('filtroFechaInicio').value;
+        const fin = document.getElementById('filtroFechaFin').value;
+        if (!inicio || !fin) {
+            return alert('Selecciona ambas fechas para filtrar.');
         }
-
         try {
-            // Realizar la solicitud Fetch para obtener los trabajos filtrados
-            const res = await fetch(`?c=trabajos&a=filtrarPorFecha&fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`);
+            const res = await fetch(`?c=trabajos&a=filtrarPorFecha&fecha_inicio=${inicio}&fecha_fin=${fin}`);
             const data = await res.json();
-
-            if (data.error) {
-                alert(data.error);  // Mostrar mensaje de error si no hay resultados
-            } else {
-                trabajosFiltrados = data.trabajos; // Actualizar trabajos filtrados
-                currentPage = 1;  // Resetear a la primera página al aplicar el filtro
-                mostrarTrabajosPagina(currentPage);  // Mostrar los trabajos filtrados en la primera página
-                generarPaginacion();  // Generar los botones de paginación para los resultados filtrados
-            }
-        } catch (error) {
-            console.error('Error al filtrar los trabajos:', error);
-            alert('Ocurrió un error al filtrar los trabajos.');
+            if (data.error) return alert(data.error);
+            trabajosFiltrados = data.trabajos;
+            currentPage = 1;
+            mostrarTrabajosPagina(currentPage);
+            generarPaginacion();
+        } catch (e) {
+            console.error(e);
+            alert('Error al filtrar los trabajos.');
         }
     });
 
-    // Buscador en vivo para trabajos
-    document.getElementById('buscadorTrabajos').addEventListener('input', function() {
-        const filtro = this.value.toLowerCase();
-
-        // Aplicamos el filtro sobre todos los trabajos originales
-        trabajosFiltrados = trabajosOriginales.filter(trabajo =>
-            trabajo.ID_trabajo.toString().toLowerCase().includes(filtro) ||
-            trabajo.Cliente.toLowerCase().includes(filtro) ||
-            trabajo.Vehiculo.toLowerCase().includes(filtro) ||
-            trabajo.Fecha.toLowerCase().includes(filtro) ||
-            trabajo.Total.toString().toLowerCase().includes(filtro)
-        );
-
-        currentPage = 1; // Volver a la primera página después de buscar
-        mostrarTrabajosPagina(currentPage); // Mostrar los resultados filtrados
-        generarPaginacion(); // Actualizar la paginación según los resultados
-    });
-
-    // Función para limpiar los filtros y volver a mostrar todos los trabajos
-    document.getElementById('limpiarFiltro').addEventListener('click', function() {
-        // Restablecer la lista de trabajos filtrados a la lista original
+    document.getElementById('limpiarFiltro').addEventListener('click', () => {
         trabajosFiltrados = [...trabajosOriginales];
-        currentPage = 1;  // Volver a la primera página
-        mostrarTrabajosPagina(currentPage);  // Mostrar todos los trabajos en la primera página
-        generarPaginacion();  // Generar los botones de paginación para los trabajos no filtrados
-        document.getElementById('filtroFechaInicio').value = '';  // Limpiar los campos de filtro
+        currentPage = 1;
+        document.getElementById('filtroFechaInicio').value = '';
         document.getElementById('filtroFechaFin').value = '';
+        mostrarTrabajosPagina(currentPage);
+        generarPaginacion();
     });
 
-    // Inicializar la página
-    mostrarTrabajosPagina(currentPage);
-    generarPaginacion();
-});
+    document.getElementById('buscadorTrabajos').addEventListener('input', function() {
+        const term = this.value.toLowerCase();
+        trabajosFiltrados = trabajosOriginales.filter(t =>
+            t.ID_trabajo.toString().includes(term) ||
+            t.Cliente.toLowerCase().includes(term) ||
+            t.Vehiculo.toLowerCase().includes(term) ||
+            t.Fecha.toLowerCase().includes(term) ||
+            t.Total.toString().includes(term)
+        );
+        currentPage = 1;
+        mostrarTrabajosPagina(currentPage);
+        generarPaginacion();
+    });
+
+    function generarPresupuestoPDF() {
+        if (!detalleTrabajoActual) {
+            return alert("No hay datos cargados del trabajo.");
+        }
+
+        const payload = {
+            id_trabajo: detalleTrabajoActual.id_trabajo,
+            fecha: detalleTrabajoActual.fecha,
+            total: detalleTrabajoActual.total,
+            propietario: detalleTrabajoActual.cliente,
+            vehiculo: detalleTrabajoActual.vehiculo,
+            nota: detalleTrabajoActual.nota,
+            productos: detalleTrabajoActual.productos.map(p => ({
+                producto: p.NombreProducto,
+                cantidad: p.Cantidad,
+                importe: p.PrecioUnitario
+            }))
+        };
+
+        fetch('?c=trabajos&a=generarPDF', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    datos_pdf: payload
+                })
+            })
+            .then(res => res.blob())
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Trabajo_${detalleTrabajoActual.cliente}_${detalleTrabajoActual.vehiculo}_${detalleTrabajoActual.fecha}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            })
+            .catch(err => {
+                console.error('Error PDF:', err);
+                alert('No se pudo generar el PDF.');
+            });
+    }
 
 
+    // Inicialización al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+        mostrarTrabajosPagina(currentPage);
+        generarPaginacion();
+    });
 </script>

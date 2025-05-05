@@ -94,90 +94,149 @@ class TrabajosControlador
     {
         require 'dompdf/vendor/autoload.php';
 
-        // Obtener los datos del JSON
-        $datos = json_decode(file_get_contents("php://input"), true);
+        // Recibimos los datos via JSON
+        $input = json_decode(file_get_contents("php://input"), true)['datos_pdf'];
 
-        // Datos del cliente y vehículo (asegúrate de acceder correctamente a las propiedades)
-        $cliente = $datos['cliente']['nombre']; // El nombre del cliente
-        $vehiculo = $datos['vehiculo']['nombre']; // El nombre del vehículo
-        $datos_pdf = $datos['datos_pdf']; // Los productos de la factura
+        // Datos básicos del trabajo
+       
+        $fechaTrabajo = $input['fecha']       ?? 'N/D';
+        $propietario = $input['propietario'] ?? 'No especificado';
+        $vehiculo    = $input['vehiculo']    ?? 'No especificado';
+        $Nota        = $input['nota']        ?? 'No especificado';
+        
 
-        $fecha = date('d/m/Y');
-        $fechaArchivo = date('Ymd');
+        // Productos
+        $productos = $input['productos'] ?? [];
 
-        $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logo.png'));
+        // Fechas
+        $fecha       = date('d/m/Y');
+        $fechaArchivo = date('Ymd_His');
 
-        // HTML
+        // Logo en base64
+        $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logojb1.png'));
+
+        // Construimos el HTML
         $html = '
         <style>
-            body { font-family: Arial, sans-serif; font-size: 13px; }
-            .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-            .logo img { width: 130px; }
-            .titulo { text-align: right; }
-            .titulo h2 { margin: 0; font-size: 22px; }
-            .fecha { text-align: right; font-size: 12px; margin-top: 3px; }
-            .cliente-vehiculo { margin-top: 10px; font-size: 14px; text-align: right; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #333; padding: 8px 10px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            tr:nth-child(even) { background-color: #fafafa; }
-            .total { text-align: right; font-weight: bold; padding: 10px; margin-top: 10px; }
+            body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
+            .header { margin-bottom: 20px; text-align: center; }
+            .logo img { width: 120px; }
+            .header-title { font-size: 22px; margin: 5px 0 0 0; }
+            .header-table { 
+                width: 100%; 
+                margin-top: 10px; 
+                font-size: 11px; 
+                border: none; 
+                border-collapse: collapse;
+            }
+            .header-table td { 
+                vertical-align: top; 
+                border: none;
+            }
+            .products-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .products-table th {
+                background-color: #eee;
+                border: 1px solid #000;
+                padding: 5px;
+                text-align: center;
+            }
+            .products-table td {
+                padding: 5px;
+                text-align: center;
+                border: none;
+            }
+            .products-table tfoot td {
+                border-top: 1px solid #000;
+                padding: 5px;
+            }
         </style>
-    
+
         <div class="header">
             <div class="logo">
                 <img src="' . $logo . '" alt="Logo">
             </div>
-            <div class="titulo">
-                <h2>Trabajo</h2>
-                <div class="fecha">Fecha: ' . $fecha . '</div>
-            </div>
+            <h2 class="header-title">Taller de Motos JB</h2>
+
+            <table class="header-table">
+                <tr>
+                    <td style="text-align: left;">
+                        Larriera 1425<br>
+                        Venado Tuerto, Santa Fe
+                    </td>
+                    <td style="text-align: right;">
+                        MONOTRIBUTO: Cat. A<br>
+                        CUIL: 20-39110870-7
+                    </td>
+                </tr>
+            </table>
         </div>
-    
-        <div class="cliente-vehiculo">
-            <strong>Cliente:</strong> ' . $cliente . '<br>
-            <strong>Vehículo:</strong> ' . $vehiculo . '
-        </div>
-    
-        <table>
+
+        <hr>
+
+        <h3 style="text-align: center;">Trabajo Realizado</h3>
+
+        <p><strong>Fecha:</strong> ' . $fechaTrabajo . '</p>
+        <p><strong>Propietario:</strong> ' . $propietario . '</p>
+        <p><strong>Vehiculo:</strong> ' . $vehiculo . '</p>
+
+        <table class="products-table">
             <thead>
                 <tr>
                     <th>Producto</th>
+                    <th>Importe Unitario</th>
                     <th>Cantidad</th>
-                    <th>Precio Unitario</th>
                     <th>Subtotal</th>
                 </tr>
             </thead>
             <tbody>';
-
         $total = 0;
-        foreach ($datos_pdf as $item) {
+        foreach ($productos as $item) {
             $subtotal = $item['importe'] * $item['cantidad'];
-            $html .= "<tr>
-                        <td>{$item['nombre']}</td>
-                        <td>{$item['cantidad']}</td>
-                        <td>$ " . number_format($item['importe'], 2) . "</td>
-                        <td>$ " . number_format($subtotal, 2) . "</td>
-                      </tr>";
             $total += $subtotal;
+            $html .= '
+                <tr>
+                    <td>' . htmlspecialchars($item['producto']) . '</td>
+                    <td>$' . number_format($item['importe'], 2) . '</td>
+                    <td>' . intval($item['cantidad']) . '</td>
+                    <td>$' . number_format($subtotal, 2) . '</td>
+                </tr>';
         }
+        $html .= '
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+                    <td><strong>$' . number_format($total, 2) . '</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+      
+        <p><strong>Nota:</strong> ' . $Nota . '</p>
 
-        $html .= '</tbody></table>';
-        $html .= '<div class="total">Total: $ ' . number_format($total, 2) . '</div>';
+        ';
 
+        // Renderizamos con Dompdf
         $dompdf = new Dompdf\Dompdf();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
+        if (ob_get_length()) ob_clean();
+        flush();
 
+        // Enviamos el PDF al navegador
         header('Content-Type: application/pdf');
         header('Content-Disposition: attachment; filename="trabajo_' . $fechaArchivo . '.pdf"');
         echo $dompdf->output();
-
         exit;
     }
 
-    public function filtrarPorFecha() {
+
+    public function filtrarPorFecha()
+    {
         // Obtener las fechas desde la URL
         $fecha_inicio = $_GET['fecha_inicio'];  // Formato YYYY-MM-DD
         $fecha_fin = $_GET['fecha_fin'];  // Formato YYYY-MM-DD
@@ -193,11 +252,10 @@ class TrabajosControlador
         $fecha_fin = date('Y-m-d', strtotime($fecha_fin));
 
         // Consultar los trabajos dentro de ese rango de fechas
-      
-        $trabajosFiltrados =$this->modeloTrabajo->obtenerTrabajosPorFecha($fecha_inicio, $fecha_fin);
+
+        $trabajosFiltrados = $this->modeloTrabajo->obtenerTrabajosPorFecha($fecha_inicio, $fecha_fin);
 
         // Devolver los resultados como JSON
         echo json_encode(['trabajos' => $trabajosFiltrados]);
     }
-
 }

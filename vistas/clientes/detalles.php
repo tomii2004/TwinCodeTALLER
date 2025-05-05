@@ -57,10 +57,10 @@
                                     <option value="todos" <?= $vehiculoSeleccionado === 'todos' ? 'selected' : '' ?>>
                                         Todos los vehículos</option>
                                     <?php foreach ($vehiculos as $vehiculo): ?>
-                                    <option value="<?= htmlspecialchars($vehiculo['Nombre']) ?>"
-                                        <?= $vehiculoSeleccionado === $vehiculo['Nombre'] ? 'selected' : '' ?>>
-                                        <?= ucfirst(htmlspecialchars($vehiculo['Nombre'])) ?>
-                                    </option>
+                                        <option value="<?= htmlspecialchars($vehiculo['Nombre']) ?>"
+                                            <?= $vehiculoSeleccionado === $vehiculo['Nombre'] ? 'selected' : '' ?>>
+                                            <?= ucfirst(htmlspecialchars($vehiculo['Nombre'])) ?>
+                                        </option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -77,17 +77,17 @@
                                     </thead>
                                     <tbody>
                                         <?php foreach ($trabajos as $trabajo): ?>
-                                        <tr>
-                                            <td><?= $trabajo['Fecha'] ?></td>
-                                            <td>$<?= number_format($trabajo['Total'], 2, ',', '.') ?></td>
-                                            <td><?= htmlspecialchars($trabajo['vehiculo']) ?></td>
-                                            <td>
-                                                <button class="btn btn-info btn-sm"
-                                                    onclick="showDetails(<?= $trabajo['ID_trabajo'] ?>, <?= json_encode($trabajo['Productos']) ?>)">
-                                                    Ver detalles
-                                                </button>
-                                            </td>
-                                        </tr>
+                                            <tr>
+                                                <td><?= $trabajo['Fecha'] ?></td>
+                                                <td>$<?= number_format($trabajo['Total'], 2, ',', '.') ?></td>
+                                                <td><?= htmlspecialchars($trabajo['vehiculo']) ?></td>
+                                                <td>
+                                                    <button class="btn btn-info btn-sm"
+                                                        onclick="showDetails(<?= $trabajo['ID_trabajo'] ?>, <?= json_encode($trabajo['Productos']) ?>)">
+                                                        Ver detalles
+                                                    </button>
+                                                </td>
+                                            </tr>
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
@@ -109,45 +109,46 @@
     <div id="modales"></div>
 
     <script>
-    const clienteID = <?= isset($_GET['id']) ? json_encode($_GET['id']) : 'null' ?>;
-    const filtro = document.getElementById('vehiculoFiltro');
-    const tbody = document.querySelector('#tablaTrabajos tbody');
-    const modalesContainer = document.getElementById('modales');
+        const clienteID = <?= isset($_GET['id']) ? json_encode($_GET['id']) : 'null' ?>;
+        const filtro = document.getElementById('vehiculoFiltro');
+        const tbody = document.querySelector('#tablaTrabajos tbody');
+        const modalesContainer = document.getElementById('modales');
+        let detalleTrabajoActual = null;
 
-    let todosLosTrabajos = [];
-    let trabajosPorPagina = 5; // Cantidad de filas por página
-    let paginaActual = 1;
+        let todosLosTrabajos = [];
+        let trabajosPorPagina = 5; // Cantidad de filas por página
+        let paginaActual = 1;
 
-    async function cargar(vehiculo) {
-        try {
-            const res = await fetch(`?c=clientes&a=ObtenerTrabajosJSON&cliente=${clienteID}&vehiculo=${vehiculo}`);
-            const trabajos = await res.json();
+        async function cargar(vehiculo) {
+            try {
+                const res = await fetch(`?c=clientes&a=ObtenerTrabajosJSON&cliente=${clienteID}&vehiculo=${vehiculo}`);
+                const trabajos = await res.json();
 
-            todosLosTrabajos = trabajos;
-            paginaActual = 1; // Resetea a la primera página
-            renderizarTabla();
-        } catch (error) {
-            console.error('Error cargando trabajos:', error);
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error cargando datos.</td></tr>';
-        }
-    }
-
-    function renderizarTabla() {
-        tbody.innerHTML = '';
-        modalesContainer.innerHTML = '';
-
-        if (todosLosTrabajos.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay trabajos registrados.</td></tr>';
-            document.getElementById('paginador')?.remove();
-            return;
+                todosLosTrabajos = trabajos;
+                paginaActual = 1; // Resetea a la primera página
+                renderizarTabla();
+            } catch (error) {
+                console.error('Error cargando trabajos:', error);
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error cargando datos.</td></tr>';
+            }
         }
 
-        const inicio = (paginaActual - 1) * trabajosPorPagina;
-        const fin = inicio + trabajosPorPagina;
-        const trabajosPagina = todosLosTrabajos.slice(inicio, fin);
+        function renderizarTabla() {
+            tbody.innerHTML = '';
+            modalesContainer.innerHTML = '';
 
-        trabajosPagina.forEach(t => {
-            tbody.innerHTML += `
+            if (todosLosTrabajos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay trabajos registrados.</td></tr>';
+                document.getElementById('paginador')?.remove();
+                return;
+            }
+
+            const inicio = (paginaActual - 1) * trabajosPorPagina;
+            const fin = inicio + trabajosPorPagina;
+            const trabajosPagina = todosLosTrabajos.slice(inicio, fin);
+
+            trabajosPagina.forEach(t => {
+                tbody.innerHTML += `
                 <tr>
                     <td>${t.Fecha}</td>
                     <td>$${parseFloat(t.Total).toLocaleString('es-AR', {minimumFractionDigits:2})}</td>
@@ -159,18 +160,18 @@
                     </td>
                 </tr>
             `;
-        });
+            });
 
-        renderizarPaginador();
-    }
+            renderizarPaginador();
+        }
 
-    function renderizarPaginador() {
-        document.getElementById('paginador')?.remove(); // Elimina el paginador anterior si existe
+        function renderizarPaginador() {
+            document.getElementById('paginador')?.remove(); // Elimina el paginador anterior si existe
 
-        const totalPaginas = Math.ceil(todosLosTrabajos.length / trabajosPorPagina);
-        if (totalPaginas <= 1) return; // No crear paginador si no hace falta
+            const totalPaginas = Math.ceil(todosLosTrabajos.length / trabajosPorPagina);
+            if (totalPaginas <= 1) return; // No crear paginador si no hace falta
 
-        let paginadorHTML = `
+            let paginadorHTML = `
             <nav id="paginador" class="mt-3">
                 <ul class="pagination justify-content-center">
                     <li class="page-item ${paginaActual === 1 ? 'disabled' : ''}">
@@ -178,15 +179,15 @@
                     </li>
         `;
 
-        for (let i = 1; i <= totalPaginas; i++) {
-            paginadorHTML += `
+            for (let i = 1; i <= totalPaginas; i++) {
+                paginadorHTML += `
                 <li class="page-item ${paginaActual === i ? 'active' : ''}">
                     <a class="page-link" href="#" onclick="cambiarPagina(${i})">${i}</a>
                 </li>
             `;
-        }
+            }
 
-        paginadorHTML += `
+            paginadorHTML += `
                     <li class="page-item ${paginaActual === totalPaginas ? 'disabled' : ''}">
                         <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual + 1})">Siguiente</a>
                     </li>
@@ -194,27 +195,42 @@
             </nav>
         `;
 
-        tbody.parentElement.insertAdjacentHTML('afterend', paginadorHTML);
-    }
+            tbody.parentElement.insertAdjacentHTML('afterend', paginadorHTML);
+        }
 
-    function cambiarPagina(nuevaPagina) {
-        const totalPaginas = Math.ceil(todosLosTrabajos.length / trabajosPorPagina);
-        if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
-        paginaActual = nuevaPagina;
-        renderizarTabla();
-    }
+        function cambiarPagina(nuevaPagina) {
+            const totalPaginas = Math.ceil(todosLosTrabajos.length / trabajosPorPagina);
+            if (nuevaPagina < 1 || nuevaPagina > totalPaginas) return;
+            paginaActual = nuevaPagina;
+            renderizarTabla();
+        }
 
-    filtro.addEventListener('change', () => cargar(filtro.value));
-    cargar(filtro.value);
+        filtro.addEventListener('change', () => cargar(filtro.value));
+        cargar(filtro.value);
 
-    function capitalizar(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    }
+        function capitalizar(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
 
-    function showDetails(id, productos) {
-        document.getElementById(`m${id}`)?.remove();
+        function showDetails(id, productos) {
+            const trabajo = todosLosTrabajos.find(t => t.ID_trabajo === id);
 
-        let modalHTML = `
+            detalleTrabajoActual = {
+                id_trabajo: id,
+                fecha: trabajo.Fecha,
+                total: parseFloat(trabajo.Total),
+                propietario: capitalizar(trabajo.cliente),
+                vehiculo: capitalizar(trabajo.vehiculo),
+                nota: trabajo.Nota,
+                productos: productos.map(p => ({
+                    producto: p.NombreProducto,
+                    cantidad: p.Cantidad,
+                    importe: parseFloat(p.PrecioUnitario)
+                }))
+            };
+            document.getElementById(`m${id}`)?.remove();
+
+            let modalHTML = `
             <div class="modal fade" id="m${id}" tabindex="-1" role="dialog" aria-labelledby="modalLabel${id}" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
@@ -253,8 +269,14 @@
                                     </tfoot>
                                 </table>
                             ` : '<p>No hay productos para mostrar.</p>'}
+                                <div class="alert alert-secondary text-start mt-3" role="alert" style="white-space:">
+                                    <strong>Nota:</strong><br>
+                                    ${detalleTrabajoActual.nota}
+                            </div>
                         </div>
+                        
                         <div class="modal-footer">
+                            <button class="btn btn-danger" onclick="generarTrabajoPDF()">Generar PDF</button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                         </div>
                     </div>
@@ -262,9 +284,58 @@
             </div>
         `;
 
-        modalesContainer.insertAdjacentHTML('beforeend', modalHTML);
-        $(`#m${id}`).modal('show');
-    }
+            modalesContainer.insertAdjacentHTML('beforeend', modalHTML);
+            $(`#m${id}`).modal('show');
+        }
+
+        function generarTrabajoPDF() {
+            if (!detalleTrabajoActual) {
+                return alert("No hay datos del trabajo para generar el PDF.");
+            }
+
+            // Armamos el payload exactamente como el controlador espera
+            const payload = {
+                id_trabajo: detalleTrabajoActual.id_trabajo,
+                fecha: detalleTrabajoActual.fecha,
+                total: detalleTrabajoActual.total,
+                propietario: detalleTrabajoActual.propietario,
+                vehiculo: detalleTrabajoActual.vehiculo,
+                productos: detalleTrabajoActual.productos,
+                nota: detalleTrabajoActual.nota
+            };
+
+            fetch(`?c=trabajos&a=generarPDF`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        datos_pdf: payload
+                    })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error("HTTP " + res.status);
+                    return res.blob();
+                })
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Trabajo_${detalleTrabajoActual.propietario}_${detalleTrabajoActual.vehiculo}_${detalleTrabajoActual.fecha}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                })
+                .catch(err => {
+                    console.error('Error generando PDF:', err);
+                    alert('No se pudo generar el PDF.');
+                });
+        }
+
+        // No olvides inicializar tu tabla y paginador
+        document.addEventListener('DOMContentLoaded', () => {
+            cargar(filtro.value);
+        });
     </script>
 
 </div>
