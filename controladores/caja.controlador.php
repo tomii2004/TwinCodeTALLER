@@ -11,16 +11,39 @@ class CajaControlador {
 
     public function Inicio()
     {
-        // Fecha seleccionada o la de hoy si no se pasa
-        $fecha = $_GET['fecha'] ?? date('Y-m-d');
+        $modo  = $_GET['modo'] ?? 'dia';
 
-        // Totales automáticos
-        $datosCaja = $this->modelo->calcularCajaPorFecha($fecha);
-        // Detalle de cada línea
-        $detalle   = $this->modelo->obtenerDetallePorFecha($fecha);
+        if ($modo === 'rango') {
+            $desde = $_GET['desde'] ?? null;
+            $hasta = $_GET['hasta'] ?? null;
+
+            if ($desde && $hasta && $desde <= $hasta) {
+                $datosCaja = $this->modelo->calcularCajaPorRango($desde, $hasta);
+                $detalle   = $this->modelo->obtenerDetallePorRango($desde, $hasta);
+                $tituloFecha = "Rango del $desde al $hasta";
+            } else {
+                $datosCaja = ['ingresos' => 0, 'egresos' => 0, 'total' => 0];
+                $detalle = [];
+                $tituloFecha = "Fechas inválidas para rango";
+            }
+
+        } else {
+            $fecha = $_GET['fecha'] ?? null;
+            if ($fecha) {
+                $datosCaja = $this->modelo->calcularCajaPorFecha($fecha);
+                $detalle   = $this->modelo->obtenerDetallePorFecha($fecha);
+                $tituloFecha = "Día $fecha";
+            } else {
+                $datosCaja = ['ingresos' => 0, 'egresos' => 0, 'total' => 0];
+                $detalle = [];
+                $tituloFecha = "Fecha inválida";
+            }
+        }
 
         require_once "vistas/encabezado.php";
         require_once "vistas/caja/caja.php";
         require_once "vistas/pie.php";
     }
+
+
 }

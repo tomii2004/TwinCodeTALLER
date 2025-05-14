@@ -4,7 +4,10 @@
     <!-- Header -->
     <section class="content-header">
         <div class="container-fluid">
-            <h1>Caja del día: <?= htmlspecialchars($datosCaja['fecha']) ?></h1>
+            <h1>
+                Caja de
+                <?= isset($_GET['desde']) && isset($_GET['hasta']) ? htmlspecialchars($_GET['desde'] . " a " . $_GET['hasta']) : htmlspecialchars($datosCaja['fecha']) ?>
+            </h1>
         </div>
     </section>
 
@@ -14,19 +17,34 @@
 
             <!-- Fecha selector -->
             <div class="row mb-3">
-                <div class="col-md-4 offset-md-8">
-                    <form method="get" action="">
+                <div class="col-md-6">
+                    <form method="get" action="" onsubmit="return validarFechas();">
                         <input type="hidden" name="c" value="caja">
                         <input type="hidden" name="a" value="Inicio">
-                        <div class="input-group">
-                            <input type="date" name="fecha" class="form-control"
-                                   value="<?= htmlspecialchars($datosCaja['fecha']) ?>">
-                            <div class="input-group-append">
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="fas fa-search"></i> Consultar
-                                </button>
-                            </div>
+
+                        <div class="form-group mb-2">
+                            <label for="modo">Consultar por:</label>
+                            <select id="modo" name="modo" class="form-control" onchange="mostrarCampos()">
+                                <option value="dia" <?= (($_GET['modo'] ?? '') == 'dia' ? 'selected' : '') ?>>Un solo día</option>
+                                <option value="rango" <?= (($_GET['modo'] ?? '') == 'rango' ? 'selected' : '') ?>>Rango de fechas</option>
+                            </select>
                         </div>
+
+                        <div id="campo-dia" style="display: none;">
+                            <label for="fecha">Fecha:</label>
+                            <input type="date" name="fecha" id="fecha" class="form-control" value="<?= htmlspecialchars($_GET['fecha'] ?? '') ?>">
+                        </div>
+
+                        <div id="campo-rango" style="display: none;">
+                            <label>Desde:</label>
+                            <input type="date" name="desde" class="form-control mb-2" value="<?= htmlspecialchars($_GET['desde'] ?? '') ?>">
+                            <label>Hasta:</label>
+                            <input type="date" name="hasta" class="form-control mb-2" value="<?= htmlspecialchars($_GET['hasta'] ?? '') ?>">
+                        </div>
+
+                        <button class="btn btn-primary mt-2" type="submit">
+                            <i class="fas fa-search"></i> Consultar
+                        </button>
                     </form>
                 </div>
             </div>
@@ -90,7 +108,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                        <?php endif; ?>
+                                    <?php endif; ?>
                                     <tr>
                                         <td><?= ucfirst(htmlspecialchars($d['categoria'])) ?></td>
                                         <td><?= ucfirst(htmlspecialchars($d['producto'])) ?></td>
@@ -98,14 +116,63 @@
                                         <td class="text-right">$<?= number_format($d['preciounitario'], 2) ?></td>
                                         <td class="text-right">$<?= number_format($d['total'], 2) ?></td>
                                     </tr>
-                    <?php endforeach;
+                                    <?php endforeach;
                     if ($currentTrabajo !== null) echo "</tbody></table></div></div>";
                     if (empty($detalle)): ?>
-                        <p class="text-center">No se encontraron registros para esta fecha.</p>
-                    <?php endif; ?>
-                </div>
-            </div>
+                                    <p class="text-center">No se encontraron registros para esta fecha.</p>
+                                    <?php endif; ?>
+                        </div>
+                    </div>
 
-        </div><!-- /.container-fluid -->
+                </div><!-- /.container-fluid -->
     </section>
 </div>
+<script>
+function mostrarCampos() {
+    var modo = document.getElementById("modo").value;
+    document.getElementById("campo-dia").style.display = (modo === "dia") ? "block" : "none";
+    document.getElementById("campo-rango").style.display = (modo === "rango") ? "block" : "none";
+}
+function validarFechas() {
+    const modo = document.getElementById("modo").value;
+
+    if (modo === "dia") {
+        const fecha = document.getElementById("fecha").value;
+        if (!fecha) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Falta la fecha',
+                text: 'Por favor, ingresá una fecha.',
+                confirmButtonColor: '#ff6daf'
+            });
+            return false;
+        }
+    } else if (modo === "rango") {
+        const desde = document.querySelector("input[name='desde']").value;
+        const hasta = document.querySelector("input[name='hasta']").value;
+        if (!desde || !hasta) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Faltan fechas',
+                text: 'Por favor, ingresá ambas fechas: desde y hasta.',
+                confirmButtonColor: '#ff6daf'
+            });
+            return false;
+        }
+        if (desde > hasta) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Fechas inválidas',
+                text: "La fecha 'Desde' no puede ser mayor que 'Hasta'.",
+                confirmButtonColor: '#ff6daf'
+            });
+            return false;
+        }
+    }
+
+    return true;
+}
+
+// Ejecutar al cargar la página
+document.addEventListener("DOMContentLoaded", mostrarCampos);
+</script>
