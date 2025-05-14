@@ -108,6 +108,7 @@
 
             // Normalizamos los productos
             const productos = productosRaw.map(p => ({
+                ID_producto: p.ID_producto,
                 NombreProducto: capitalizar(p.NombreProducto),
                 Cantidad: p.Cantidad,
                 PrecioUnitario: parseFloat(p.PrecioUnitario),
@@ -125,7 +126,7 @@
                 nota: trabajo.Nota,
                 productos
             };
-
+            console.log(detalleTrabajoActual.productos);
             // Construimos el HTML del modal
             let modalHTML = `
             <div class="modal fade" id="m${id}" tabindex="-1" role="dialog" aria-labelledby="modalLabel${id}" aria-hidden="true">
@@ -144,19 +145,24 @@
                             </tr>
                           </thead>
                           <tbody>
-                            ${productos.map(p => `
-                              <tr>
+                            ${productos.map((p, i) => `
+                            <tr>
                                 <td>${p.NombreProducto}</td>
                                 <td>${p.Cantidad}</td>
-                                <td>$${p.PrecioUnitario.toFixed(2)}</td>
-                                <td>$${p.Subtotal.toFixed(2)}</td>
-                              </tr>
+                                <td>
+                                <input type="number" min="0" step="0.01" class="form-control form-control-sm precio-unitario" 
+                                    value="${p.PrecioUnitario.toFixed(2)}" 
+                                    data-index="${i}" 
+                                    oninput="actualizarSubtotal(${i})">
+                                </td>
+                                <td class="subtotal" data-index="${i}">$${p.Subtotal.toFixed(2)}</td>
+                            </tr>
                             `).join('')}
                           </tbody>
                           <tfoot>
                             <tr>
-                              <th colspan="3" class="text-right">Total</th>
-                              <th>$${productos.reduce((s,p) => s + p.Subtotal, 0).toFixed(2)}</th>
+                                <th colspan="3" class="text-right">Total</th>
+                                <th id="totalGeneral">$${productos.reduce((s,p) => s + p.Subtotal, 0).toFixed(2)}</th>
                             </tr>
                           </tfoot>
                         </table>`
@@ -167,6 +173,7 @@
                     </div>
                   </div>
                   <div class="modal-footer">
+                    <button class="btn btn-success" onclick="guardarCambiosImportes(${id})">Guardar Cambios</button>
                     <button class="btn btn-danger" onclick="generarPresupuestoPDF()">Generar PDF</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                   </div>
@@ -178,10 +185,97 @@
             document.getElementById('modalesContainer').insertAdjacentHTML('beforeend', modalHTML);
             $(`#m${id}`).modal('show');
 
+            document.querySelectorAll(`#m${id} input.precio-unitario`).forEach(input => {
+                input.addEventListener('input', function () {
+                    const index = this.getAttribute('data-index');
+                    actualizarSubtotal(index);
+                });
+            });
+
         } catch (error) {
             console.error('Error al obtener detalles del trabajo:', error);
             alert('No se pudieron cargar los detalles del trabajo.');
         }
+    }
+
+    function actualizarSubtotal(index) {
+        const input = document.querySelector(`input.precio-unitario[data-index="${index}"]`);
+        const precio = parseFloat(input.value);
+        const cantidad = detalleTrabajoActual.productos[index].Cantidad;
+        const nuevoSubtotal = precio * cantidad;
+
+        // Actualizar en JS
+        detalleTrabajoActual.productos[index].PrecioUnitario = precio;
+        detalleTrabajoActual.productos[index].Subtotal = nuevoSubtotal;
+
+        // Actualizar en HTML
+        const subtotalElem = document.querySelector(`.subtotal[data-index="${index}"]`);
+        subtotalElem.textContent = `$${nuevoSubtotal.toFixed(2)}`;
+
+        // Actualizar total general
+        const total = detalleTrabajoActual.productos.reduce((s, p) => s + p.Subtotal, 0);
+        document.querySelector(`#m${detalleTrabajoActual.id_trabajo} #totalGeneral`).textContent = `$${total.toFixed(2)}`;
+        detalleTrabajoActual.total = total;
+    }
+    function guardarCambiosImportes(id) {
+        console.log("Guardando cambios para el trabajo ID:", id);
+        const payload = {
+            id_trabajo: id,
+            productos: detalleTrabajoActual.productos.map(p => ({
+                id_producto: p.ID_producto,
+                precio: p.PrecioUnitario
+            }))
+        };
+        console.log(JSON.stringify(payload));
+        fetch('?c=trabajos&a=actualizarImportesTrabajo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                Swal.fire({
+                icon: 'success',
+                title: '¡Importes actualizados!',
+                text: 'Importes actualizados correctamente',
+                confirmButtonText: 'OK'
+                }).then(() => {
+                // Cerrás el modal
+                $(`#m${id}`).modal('hide');
+                
+                // 🔁 ACTUALIZAMOS EL TOTAL EN trabajosOriginales Y trabajosFiltrados
+                const trabajo = trabajosOriginales.find(t => t.ID_trabajo === id);
+                if (trabajo) trabajo.Total = detalleTrabajoActual.total.toFixed(2);
+
+                const trabajoFiltrado = trabajosFiltrados.find(t => t.ID_trabajo === id);
+                if (trabajoFiltrado) trabajoFiltrado.Total = detalleTrabajoActual.total.toFixed(2);
+
+                // 🔁 ACTUALIZAMOS LA TABLA SIN RECARGAR TODO
+                mostrarTrabajosPagina(currentPage);
+                });
+
+            } else {
+                Swal.fire({
+                icon: 'error',
+                title: 'Error al actualizar',
+                text: res.error,
+                confirmButtonText: 'Cerrar'
+                });
+            }
+            })
+        .catch(err => {
+            console.error(err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'No se pudo guardar los cambios.',
+                confirmButtonText: 'Cerrar'
+            });
+        });
+
     }
 
     function mostrarTrabajos(trabajos) {
@@ -199,6 +293,9 @@
                   <button class="btn btn-info btn-sm" onclick="showDetails(${trabajo.ID_trabajo})">
                     <i class="fas fa-eye"></i> Detalles
                   </button>
+                  <button class="btn btn-danger btn-sm ms-1" onclick="confirmDelete(${trabajo.ID_trabajo})">
+                    <i class="fas fa-trash"></i> Eliminar
+                  </button>
                 </td>`;
             tbody.appendChild(tr);
         });
@@ -208,6 +305,68 @@
         const start = (pagina - 1) * trabajosPorPagina;
         const end = start + trabajosPorPagina;
         mostrarTrabajos(trabajosFiltrados.slice(start, end));
+    }
+
+    function confirmDelete(id) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: '¡Este trabajo se eliminará de forma permanente!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+        eliminarTrabajo(id);
+        }
+    });
+    }
+
+    /**
+     * Llama al backend para eliminar el trabajo y refresca la tabla.
+     */
+    function eliminarTrabajo(id) {
+    fetch(`?c=trabajos&a=eliminarTrabajo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_trabajo: id })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.success) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Eliminado',
+            text: 'El trabajo ha sido eliminado.',
+            timer: 1500,
+            showConfirmButton: false
+        });
+        // Quitamos del array original y filtrado
+        trabajosOriginales = trabajosOriginales.filter(t => t.ID_trabajo !== id);
+        trabajosFiltrados = trabajosFiltrados.filter(t => t.ID_trabajo !== id);
+        // Re-render de la página actual (o ir a la anterior si era el último)
+        const totalPages = Math.ceil(trabajosFiltrados.length / trabajosPorPagina);
+        if (currentPage > totalPages) currentPage = totalPages;
+        mostrarTrabajosPagina(currentPage);
+        generarPaginacion();
+        } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: res.error || 'No se pudo eliminar el trabajo.'
+        });
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo eliminar el trabajo.'
+        });
+    });
     }
 
     function generarPaginacion() {

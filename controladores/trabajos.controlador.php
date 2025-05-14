@@ -45,6 +45,55 @@ class TrabajosControlador
         require_once "vistas/trabajos/nuevo.php";
         require_once "vistas/pie.php";
     }
+    
+    public function actualizarImportesTrabajo()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+
+        if (!$data || !isset($data['id_trabajo']) || !isset($data['productos'])) {
+            echo json_encode(['success' => false, 'error' => 'Datos incompletos']);
+            return;
+        }
+
+        $idTrabajo = $data['id_trabajo'];
+        $productos = $data['productos'];
+
+        try {
+            foreach ($productos as $p) {
+                $idProducto = $p['id_producto'];
+                $nuevoPrecio = $p['precio'];
+
+                $this->modeloTrabajo->actualizarPrecioProductoTrabajo($idTrabajo, $idProducto, $nuevoPrecio);
+            }
+
+            // Recalcular el total
+            $this->modeloTrabajo->actualizarTotalTrabajo($idTrabajo);
+
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function eliminarTrabajo()
+    {
+        header('Content-Type: application/json');
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!isset($data['id_trabajo'])) {
+            echo json_encode(['success' => false, 'error' => 'ID faltante']);
+            return;
+        }
+        $id = (int)$data['id_trabajo'];
+        try {
+            // Primero borrá los productos asociados
+            $this->modeloTrabajo->borrarProductosDeTrabajo($id);
+            // Luego borrá el trabajo
+            $this->modeloTrabajo->borrarTrabajo($id);
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
 
 
     public function obtenerVehiculosPorCliente()
