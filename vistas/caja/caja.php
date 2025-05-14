@@ -5,8 +5,7 @@
     <section class="content-header">
         <div class="container-fluid">
             <h1>
-                Caja de
-                <?= isset($_GET['desde']) && isset($_GET['hasta']) ? htmlspecialchars($_GET['desde'] . " a " . $_GET['hasta']) : htmlspecialchars($datosCaja['fecha']) ?>
+                <?= htmlspecialchars($tituloFecha) ?>
             </h1>
         </div>
     </section>

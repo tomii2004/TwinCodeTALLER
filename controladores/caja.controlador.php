@@ -12,7 +12,7 @@ class CajaControlador {
     public function Inicio()
     {
         $modo  = $_GET['modo'] ?? 'dia';
-
+        $tituloFecha = "Caja de hoy";
         if ($modo === 'rango') {
             $desde = $_GET['desde'] ?? null;
             $hasta = $_GET['hasta'] ?? null;
@@ -36,7 +36,7 @@ class CajaControlador {
             } else {
                 $datosCaja = ['ingresos' => 0, 'egresos' => 0, 'total' => 0];
                 $detalle = [];
-                $tituloFecha = "Fecha inválida";
+                $tituloFecha = "Caja de hoy";
             }
         }
 
