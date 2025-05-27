@@ -31,7 +31,7 @@ El sistema permite gestionar diferentes aspectos de un taller, incluyendo vistas
 
 © 2025 Tomás. Todos los derechos reservados.
 
-Este proyecto fue desarrollado con fines educativos y personales. **No está permitido su uso comercial, redistribución ni modificación sin autorización previa del autor.**
+Este proyecto fue desarrollado con fines personales. **No está permitido su uso comercial, redistribución ni modificación sin autorización previa del autor.**
 
 Si querés colaborar, sugerir mejoras o usar parte del código, podés contactarme previamente.
 
