@@ -162,7 +162,7 @@ class TrabajosControlador
         $fechaArchivo = date('Ymd_His');
 
         // Logo en base64
-        $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logojb1.png'));
+        $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logojb.png'));
 
         // Construimos el HTML
         $html = '

@@ -269,7 +269,7 @@
 
   <div class="login-box">
     <div class="login-logo">
-      <img src="dist/img/logojb1.png" alt="TallerJB">
+      <img src="dist/img/logojb.png" alt="TallerJB">
     </div>
     <div class="card">
       <div class="card-body login-card-body">
