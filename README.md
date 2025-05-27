@@ -27,8 +27,15 @@ El sistema permite gestionar diferentes aspectos de un taller, incluyendo vistas
 - **vistas/**: Archivos visuales de la interfaz del usuario.
 - **index.php**: Punto de entrada principal de la aplicación.
 
-## Instalación
+## 📄 Derechos de Autor
 
-1. **Clonar el repositorio**:
-   ```bash
-   git clone https://github.com/tomii2004/TwinCodeTALLER.git
+© 2025 Tomás. Todos los derechos reservados.
+
+Este proyecto fue desarrollado con fines educativos y personales. **No está permitido su uso comercial, redistribución ni modificación sin autorización previa del autor.**
+
+Si querés colaborar, sugerir mejoras o usar parte del código, podés contactarme previamente.
+
+---
+
+
+
