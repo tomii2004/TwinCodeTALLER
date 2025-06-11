@@ -162,7 +162,7 @@ class TrabajosControlador
         $fechaArchivo = date('Ymd_His');
 
         // Logo en base64
-        $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logojb.png'));
+        $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logoG.png'));
 
         // Construimos el HTML
         $html = '
@@ -208,7 +208,7 @@ class TrabajosControlador
             <div class="logo">
                 <img src="' . $logo . '" alt="Logo">
             </div>
-            <h2 class="header-title">Taller de Motos JB</h2>
+            <h2 class="header-title">Taller de Motos</h2>
 
             <table class="header-table">
                 <tr>

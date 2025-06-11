@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>TallerJB | Sistema v1</title>
+  <title>Taller | Sistema v1</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -45,7 +45,7 @@
 
   <!-- Preloader -->
   <div class="preloader flex-column justify-content-center align-items-center">
-    <img class="animation__wobble" src="dist/img/logojb.png" alt="TallerJB" height="100" width="100">
+    <img class="animation__wobble" src="dist/img/logoG.png" alt="Taller" height="100" width="100">
   </div>
 
   <!-- Navbar -->
@@ -82,8 +82,8 @@
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
     <a href="?c=turnos" class="brand-link">
-      <img src="dist/img/logojb.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-      <span class="brand-text font-weight-light" style="font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif">Taller JB</span> 
+      <img src="dist/img/logoG.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+      <span class="brand-text font-weight-light" style="font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif">Taller</span> 
     </a>
 
     <!-- Sidebar -->

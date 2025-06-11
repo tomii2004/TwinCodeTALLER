@@ -28,7 +28,7 @@ class PresupuestosControlador {
         $fecha = date('d/m/Y');
         $fechaArchivo = date('Ymd');
         
-        $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logojb.png'));
+        $logo = 'data:image/png;base64,' . base64_encode(file_get_contents('vistas/logoG.png'));
     
         $html = '
         <style>
@@ -71,9 +71,10 @@ class PresupuestosControlador {
 
         <div class="header">
             <div class="logo">
-                <img src="'.$logo.'" alt="Logo">
+                <img src="' . $logo . '" alt="Logo">
             </div>
-            <h2 class="header-title">Taller de Motos JB</h2>
+
+            <h2 class="header-title">Taller de Motos</h2>
 
             <table class="header-table">
                 <tr>
